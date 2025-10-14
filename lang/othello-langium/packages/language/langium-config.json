@@ -1,14 +1,14 @@
 {
-    "projectName": "OthelloDsl",
+    "projectName": "Othello",
     "languages": [
         {
-            "id": "othello-dsl",
-            "grammar": "src/othello-dsl.langium",
+            "id": "othello",
+            "grammar": "src/othello.langium",
             "fileExtensions": [
                 "othello"
             ],
             "textMate": {
-                "out": "syntaxes/othello-dsl.tmLanguage.json"
+                "out": "syntaxes/othello.tmLanguage.json"
             }
         }
     ],

@@ -1,17 +1,13 @@
-import { afterEach, beforeAll, describe, expect, test } from "vitest";
-import { EmptyFileSystem, type LangiumDocument } from "langium";
-import { expandToString as s } from "langium/generate";
-import { clearDocuments, parseHelper } from "langium/test";
-import type { OthelloDSL } from "othello-dsl-language";
-import { createOthelloDslServices, isOthelloDSL } from "othello-dsl-language";
+import { describe } from "vitest";
 
-let services: ReturnType<typeof createOthelloDslServices>;
-let parse:    ReturnType<typeof parseHelper<OthelloDSL>>;
-let document: LangiumDocument<OthelloDSL> | undefined;
+/*
+let services: ReturnType<typeof createOthelloServices>;
+let parse:    ReturnType<typeof parseHelper<Game>>;
+let document: LangiumDocument<Game> | undefined;
 
 beforeAll(async () => {
-    services = createOthelloDslServices(EmptyFileSystem);
-    parse = parseHelper<OthelloDSL>(services.OthelloDsl);
+    services = createOthelloServices(EmptyFileSystem);
+    parse = parseHelper<Game>(services.Othello);
 
     // activate the following if your linking test requires elements from a built-in library, for example
     // await services.shared.workspace.WorkspaceManager.initializeWorkspace([]);
@@ -20,34 +16,9 @@ beforeAll(async () => {
 afterEach(async () => {
     document && clearDocuments(services.shared, [ document ]);
 });
+*/
 
 describe('Linking tests', () => {
 
-    test('linking of greetings', async () => {
-        document = await parse(`
-            person Langium
-            Hello Langium!
-        `);
-
-        expect(
-            // here we first check for validity of the parsed document object by means of the reusable function
-            //  'checkDocumentValid()' to sort out (critical) typos first,
-            // and then evaluate the cross references we're interested in by checking
-            //  the referenced AST element as well as for a potential error message;
-            checkDocumentValid(document)
-                || document.parseResult.value.greetings.map(g => g.person.ref?.name || g.person.error?.message).join('\n')
-        ).toBe(s`
-            Langium
-        `);
-    });
+    // TODO: Add linking tests
 });
-
-function checkDocumentValid(document: LangiumDocument): string | undefined {
-    return document.parseResult.parserErrors.length && s`
-        Parser errors:
-          ${document.parseResult.parserErrors.map(e => e.message).join('\n  ')}
-    `
-        || document.parseResult.value === undefined && `ParseResult is 'undefined'.`
-        || !isOthelloDSL(document.parseResult.value) && `Root AST object is a ${document.parseResult.value.$type}, expected a 'OthelloDSL'.`
-        || undefined;
-}

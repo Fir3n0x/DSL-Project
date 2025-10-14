@@ -1,8 +1,8 @@
 {
-    "name": "vscode-othello-lang",
+    "name": "vscode-Othello",
     "description": "The extension specific package",
     "version": "0.0.1",
-    "displayName": "othello-lang",
+    "displayName": "Othello",
     "type": "module",
     "engines": {
         "vscode": "^1.67.0"
@@ -12,31 +12,31 @@
     ],
     "contributes": {
         "languages": [{
-            "id": "othello-dsl",
-            "aliases": ["OthelloDSL", "othello-dsl"],
+            "id": "othello",
+            "aliases": ["Othello", "othello"],
             "extensions": [".othello"],
             "configuration": "./language-configuration.json"
         }],
         "grammars": [{
-            "language": "othello-dsl",
-            "scopeName": "source.othello-dsl",
-            "path": "syntaxes/othello-dsl.tmLanguage.json"
+            "language": "othello",
+            "scopeName": "source.othello",
+            "path": "syntaxes/othello.tmLanguage.json"
         }]
     },
     "activationEvents": [
-        "onLanguage:othello-dsl"
+        "onLanguage:othello"
     ],
     "main": "./out/extension/main.cjs",
     "scripts": {
         "clean": "shx rm -fr *.tsbuildinfo out syntaxes",
         "vscode:prepublish": "npm run build",
-        "build:prepare": "shx mkdir -p ./syntaxes/ && shx cp -f ../language/syntaxes/othello-dsl.tmLanguage.json ./syntaxes/othello-dsl.tmLanguage.json",
+        "build:prepare": "shx mkdir -p ./syntaxes/ && shx cp -f ../language/syntaxes/othello.tmLanguage.json ./syntaxes/othello.tmLanguage.json",
         "build": "npm run build:prepare && tsc -b tsconfig.json && node esbuild.mjs",
         "build:clean": "npm run clean && npm run build",
         "watch": "npm run build:prepare && concurrently -n tsc,esbuild -c blue,yellow \"tsc -b tsconfig.json --watch\" \"node esbuild.mjs --watch\""
     },
     "dependencies": {
-        "othello-dsl-language": "0.0.1",
+        "othello-language": "0.0.1",
         "vscode-languageclient": "~9.0.1",
         "vscode-languageserver": "~9.0.1"
     },

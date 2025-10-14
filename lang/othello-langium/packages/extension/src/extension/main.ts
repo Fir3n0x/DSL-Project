@@ -34,13 +34,13 @@ async function startLanguageClient(context: vscode.ExtensionContext): Promise<La
 
     // Options to control the language client
     const clientOptions: LanguageClientOptions = {
-        documentSelector: [{ scheme: '*', language: 'othello-dsl' }]
+        documentSelector: [{ scheme: '*', language: 'othello' }]
     };
 
     // Create the language client and start the client.
     const client = new LanguageClient(
-        'othello-dsl',
-        'OthelloDSL',
+        'othello',
+        'Othello',
         serverOptions,
         clientOptions
     );

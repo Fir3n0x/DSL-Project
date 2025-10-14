@@ -1,14 +1,14 @@
 import { type Module, inject } from 'langium';
 import { createDefaultModule, createDefaultSharedModule, type DefaultSharedModuleContext, type LangiumServices, type LangiumSharedServices, type PartialLangiumServices } from 'langium/lsp';
-import { OthelloDslGeneratedModule, OthelloDslGeneratedSharedModule } from './generated/module.js';
-import { OthelloDslValidator, registerValidationChecks } from './othello-dsl-validator.js';
+import { OthelloDslGeneratedModule, OthelloGeneratedSharedModule } from './generated/module.js';
+import { OthelloValidator, registerValidationChecks } from './othello-validator.js';
 
 /**
  * Declaration of custom services - add your own service classes here.
  */
-export type OthelloDslAddedServices = {
+export type OthelloAddedServices = {
     validation: {
-        OthelloDslValidator: OthelloDslValidator
+        OthelloValidator: OthelloValidator
     }
 }
 
@@ -16,16 +16,16 @@ export type OthelloDslAddedServices = {
  * Union of Langium default services and your custom services - use this as constructor parameter
  * of custom service classes.
  */
-export type OthelloDslServices = LangiumServices & OthelloDslAddedServices
+export type OthelloServices = LangiumServices & OthelloAddedServices
 
 /**
  * Dependency injection module that overrides Langium default services and contributes the
  * declared custom services. The Langium defaults can be partially specified to override only
  * selected services, while the custom services must be fully specified.
  */
-export const OthelloDslModule: Module<OthelloDslServices, PartialLangiumServices & OthelloDslAddedServices> = {
+export const OthelloModule: Module<OthelloServices, PartialLangiumServices & OthelloAddedServices> = {
     validation: {
-        OthelloDslValidator: () => new OthelloDslValidator()
+        OthelloValidator: () => new OthelloValidator()
     }
 };
 
@@ -44,25 +44,25 @@ export const OthelloDslModule: Module<OthelloDslServices, PartialLangiumServices
  * @param context Optional module context with the LSP connection
  * @returns An object wrapping the shared services and the language-specific services
  */
-export function createOthelloDslServices(context: DefaultSharedModuleContext): {
+export function createOthelloServices(context: DefaultSharedModuleContext): {
     shared: LangiumSharedServices,
-    OthelloDsl: OthelloDslServices
+    Othello: OthelloServices
 } {
     const shared = inject(
         createDefaultSharedModule(context),
-        OthelloDslGeneratedSharedModule
+        OthelloGeneratedSharedModule
     );
-    const OthelloDsl = inject(
+    const Othello = inject(
         createDefaultModule({ shared }),
         OthelloDslGeneratedModule,
-        OthelloDslModule
+        OthelloModule
     );
-    shared.ServiceRegistry.register(OthelloDsl);
-    registerValidationChecks(OthelloDsl);
+    shared.ServiceRegistry.register(Othello);
+    registerValidationChecks(Othello);
     if (!context.connection) {
         // We don't run inside a language server
         // Therefore, initialize the configuration provider instantly
         shared.workspace.ConfigurationProvider.initialized({});
     }
-    return { shared, OthelloDsl };
+    return { shared, Othello };
 }

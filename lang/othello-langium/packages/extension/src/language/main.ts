@@ -1,13 +1,13 @@
 import { startLanguageServer } from 'langium/lsp';
 import { NodeFileSystem } from 'langium/node';
 import { createConnection, ProposedFeatures } from 'vscode-languageserver/node.js';
-import { createOthelloDslServices } from 'othello-dsl-language';
+import { createOthelloServices } from 'othello-language';
 
 // Create a connection to the client
 const connection = createConnection(ProposedFeatures.all);
 
 // Inject the shared services and language-specific services
-const { shared } = createOthelloDslServices({ connection, ...NodeFileSystem });
+const { shared } = createOthelloServices({ connection, ...NodeFileSystem });
 
 // Start the language server with the shared services
 startLanguageServer(shared);

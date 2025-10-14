@@ -1,5 +1,5 @@
 {
-    "name": "othello-dsl-language",
+    "name": "othello-language",
     "description": "The language specific package",
     "version": "0.0.1",
     "type": "module",

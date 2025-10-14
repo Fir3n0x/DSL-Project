@@ -7,7 +7,7 @@ entry Game:
         initial=Initial
         position=Position
         rules=Rules
-        '}'
+    '}'
 ;
 
 Board:
