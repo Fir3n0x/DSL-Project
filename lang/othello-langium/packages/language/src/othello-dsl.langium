@@ -5,6 +5,7 @@ entry Game:
         board=Board
         players=Players
         initial=Initial
+        position=Position
         rules=Rules
         '}'
 ;
@@ -25,7 +26,51 @@ Player:
 ;
 
 Initial:
-    
+    'initial' '{'
+        cells+=CellAssign*
+    '}'
+;
+
+CellAssign:
+    'cell' position=Position '=' color=('black' | 'white')
+;
+
+Position:
+    'position' '(' row=INT ',' column=INT ')'
+;
+
+Rules:
+    'rules' '{'
+        move=MoveRule
+        end=EndRule
+        scoring=ScoringRule
+    '}'
+;
+
+MoveRule:
+    'move' '{'
+        'type' type=('placement' | 'pass')?
+        'valid' 'if' condition=ConditionExpr
+        'effect' effect=EffectExpr
+    '}'
+;
+
+ConditionExpr:
+    name='captures_in_any_direction' '(' 'r' ',' 'c' ')'
+;
+
+EffectExpr returns string:
+    'flip_captured_stones' '(' 'r' ',' 'c' ')'
+;
+
+EndRule:
+    'end' 'when' condition=ConditionExpr
+;
+
+ScoringRule returns string:
+    'scoring' 'count_pieces_per_player'
+;
+
 
 hidden terminal WS: /\s+/;
 terminal ID: /[_a-zA-Z][\w_]*/;
