@@ -128,7 +128,7 @@ Game "1" --> "1" VictoryCondition
 @enduml
 ```
 
-Mini-instances:
+Mini-instances:<br>
 1 - Othello (8x8, sandwich capture, most_tokens)<br>
 2 - MiniOthello (4x4, no mandatory capture, most_tokens)
 
@@ -143,3 +143,56 @@ Comment gérer les conditions d’arrêt multiples (ex : pas de coup possible + 
 Quelle granularité de variabilité à l’exécution est réaliste (paramètres modifiables sans rechargement complet du jeu) ?
 
 Faut-il prévoir une interopérabilité avec d’autres DSLs (ex : GDL, OpenSpiel) pour faciliter les comparaisons ?
+
+
+## TP2
+
+L’objectif du TP2 est de passer de la modélisation abstraite (métamodèle) à une syntaxe concrète opérationnelle à l’aide du framework Langium.
+
+Notre DSL permet de décrire des jeux de plateau à information parfaite — et plus particulièrement le jeu Othello — tout en intégrant :
+
+*des paramètres compile-time (CT) et run-time (RT),
+
+*une variabilité dans les règles et la structure du jeu,
+
+*et une description de l’apparence (UI / skin) directement dans le .dsl.
+
+### Génération
+
+*Installation
+
+```bash
+npm install
+```
+
+*Génération et build du langage
+
+```bash
+npm run langium:generate
+npm run build
+```
+
+Ces commandes:
+
+*génèrent les fichiers nécessaires à Langium,
+
+*compilent le projet TypeScript,
+
+*préparent l’éditeur pour l’ouverture de fichiers .dsl.
+
+
+*Exécution et exploration
+
+Les fichiers d’exemple se trouvent dans le dossier :
+
+```bash
+examples/
+```
+
+Chaque sous-dossier correspond à une variante d’un même jeu Othello.
+
+### Variantes
+
+### Validation
+
+### Preview
