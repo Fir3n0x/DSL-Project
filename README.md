@@ -152,36 +152,33 @@ L’objectif du TP2 est de passer de la modélisation abstraite (métamodèle) �
 Notre DSL permet de décrire des jeux de plateau à information parfaite — et plus particulièrement le jeu Othello — tout en intégrant :
 
 *des paramètres compile-time (CT) et run-time (RT),
-
 *une variabilité dans les règles et la structure du jeu,
-
 *et une description de l’apparence (UI / skin) directement dans le .dsl.
 
 ### Génération
 
-*Installation
+Installation
 
 ```bash
 npm install
 ```
 
-*Génération et build du langage
+Génération et build du langage
 
 ```bash
 npm run langium:generate
 npm run build
+npm run langium:watch
 ```
 
 Ces commandes:
 
 *génèrent les fichiers nécessaires à Langium,
-
 *compilent le projet TypeScript,
-
 *préparent l’éditeur pour l’ouverture de fichiers .dsl.
 
 
-*Exécution et exploration
+Exécution et exploration
 
 Les fichiers d’exemple se trouvent dans le dossier :
 
