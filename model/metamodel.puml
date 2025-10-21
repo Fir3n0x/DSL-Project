@@ -1,0 +1,87 @@
+@startuml Othello DSL
+title Othello DSL - Abstract Syntax Tree (AST)
+
+class Game {
+    name: ID
+    board: Board
+    players: Players
+    initial: Initial
+    position: Position
+    rules: Rules
+}
+
+class Board {
+    rows: int
+    columns: int
+}
+
+class Players {
+    black: Player
+    white: Player
+}
+
+class Player {
+    color: "black" | "white"
+    name: ID
+}
+
+class Initial {
+    cells: CellAssign[*]
+}
+
+class CellAssign {
+    position: Position
+    color: "black" | "white"
+}
+
+class Position {
+    row: int
+    column: int
+}
+
+class Rules {
+    move: MoveRule
+    end: EndRule
+    scoring: ScoringRule
+}
+
+class MoveRule {
+    type: "placement" | "pass"
+    condition: ConditionExpr
+    effect: EffectExpr
+}
+
+class ConditionExpr {
+    name: string = "captures_in_any_direction"
+}
+
+class EffectExpr {
+    value: string = "flip_captured_stones"
+}
+
+class EndRule {
+    condition: ConditionExpr
+}
+
+class ScoringRule {
+    value: string = "count_pieces_per_player"
+}
+
+' Relations
+Game --> Board
+Game --> Players
+Game --> Initial
+Game --> Position
+Game --> Rules
+
+Players --> Player
+Initial --> CellAssign
+CellAssign --> Position
+Rules --> MoveRule
+Rules --> EndRule
+Rules --> ScoringRule
+MoveRule --> ConditionExpr
+MoveRule --> EffectExpr
+EndRule --> ConditionExpr
+
+@enduml
