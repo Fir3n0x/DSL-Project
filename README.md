@@ -21,7 +21,9 @@ Gérer la séquence des tours et les contraintes de validité des coups.
 Le but du langage est d’offrir un moyen concis d’expérimenter des variantes de jeux parfaits comme Othello, en permettant une génération automatique du moteur de règles.
 
 Placement initial : Au début de la partie, quatre pions sont placés au centre du plateau, deux noirs et deux blancs, en diagonale :
+<br>
 B N
+<br>
 N B
 
 Déroulement du jeu : Les joueurs placent à tour de rôle un pion de leur couleur sur une case vide du plateau. Le but est de "capturer" les pions adverses.
@@ -127,7 +129,7 @@ Game "1" --> "1" VictoryCondition
 ```
 
 Mini-instances:
-1 - Othello (8x8, sandwich capture, most_tokens)
+1 - Othello (8x8, sandwich capture, most_tokens)<br>
 2 - MiniOthello (4x4, no mandatory capture, most_tokens)
 
 
