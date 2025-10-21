@@ -2,12 +2,31 @@ grammar OthelloDsl
 
 entry Game:
     'game' name=ID '{'
+        (config=Config)?
         board=Board
         players=Players
         initial=Initial
         position=Position
         rules=Rules
     '}'
+;
+
+Config:
+    'config' '{'
+        (settings+=ConfigSetting)*
+    '}'
+;
+
+ConfigSetting:
+    name=ID '=' value=ConfigValue
+;
+
+ConfigValue:
+    INT | STRING | BOOLEAN | BoardSizeValue
+;
+
+BoardSizeValue:
+    rows=INT 'x' columns=INT
 ;
 
 Board:
@@ -76,6 +95,7 @@ hidden terminal WS: /\s+/;
 terminal ID: /[_a-zA-Z][\w_]*/;
 terminal INT returns number: /[0-9]+/;
 terminal STRING: /"(\\.|[^"\\])*"|'(\\.|[^'\\])*'/;
+terminal BOOLEAN: /true|false/;
 
 hidden terminal ML_COMMENT: /\/\*[\s\S]*?\*\//;
 hidden terminal SL_COMMENT: /\/\/[^\n\r]*/;
