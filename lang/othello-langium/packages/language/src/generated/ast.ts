@@ -80,6 +80,23 @@ export function isBoard(item: unknown): item is Board {
     return reflection.isInstance(item, Board.$type);
 }
 
+export interface BoardSizeValue extends langium.AstNode {
+    readonly $container: ConfigSetting;
+    readonly $type: 'BoardSizeValue';
+    columns: number;
+    rows: number;
+}
+
+export const BoardSizeValue = {
+    $type: 'BoardSizeValue',
+    columns: 'columns',
+    rows: 'rows'
+} as const;
+
+export function isBoardSizeValue(item: unknown): item is BoardSizeValue {
+    return reflection.isInstance(item, BoardSizeValue.$type);
+}
+
 export interface CellAssign extends langium.AstNode {
     readonly $container: Initial;
     readonly $type: 'CellAssign';
@@ -417,6 +434,9 @@ export type OthelloAstType = {
     CellAssign: CellAssign
     CompileTimeBlock: CompileTimeBlock
     ConditionExpr: ConditionExpr
+    Config: Config
+    ConfigSetting: ConfigSetting
+    ConfigValue: ConfigValue
     EndRule: EndRule
     Game: Game
     Initial: Initial
@@ -487,6 +507,34 @@ export class OthelloAstReflection extends langium.AbstractAstReflection {
                 name: {
                     name: ConditionExpr.name
                 }
+            },
+            superTypes: []
+        },
+        Config: {
+            name: Config.$type,
+            properties: {
+                settings: {
+                    name: Config.settings,
+                    defaultValue: []
+                }
+            },
+            superTypes: []
+        },
+        ConfigSetting: {
+            name: ConfigSetting.$type,
+            properties: {
+                name: {
+                    name: ConfigSetting.name
+                },
+                value: {
+                    name: ConfigSetting.value
+                }
+            },
+            superTypes: []
+        },
+        ConfigValue: {
+            name: ConfigValue.$type,
+            properties: {
             },
             superTypes: []
         },

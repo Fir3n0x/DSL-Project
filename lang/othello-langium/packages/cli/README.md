@@ -1,17 +1,45 @@
-# Command-line interface (CLI)
+# Othello CLI
 
-Check [this part](https://langium.org/docs/learn/minilogo/customizing_cli/) of the Langium Minilogo Tutorial as a useful guide to the CLI.
+A small CLI to generate ASCII output from Othello DSL files.
 
-## What's in the folder?
+## Build
 
-- [package.json](./package.json) - The manifest file of your cli package.
-- [tsconfig.src.json](./tsconfig.src.json) - The package specific TypeScript compiler configuration extending the [base config](../../tsconfig.json).
-- [tsconfig.json](./tsconfig.json) - TypeScript compiler configuration options required for proper functionality of VSCode.
-- [bin/cli.js](bin/cli/cli.js) - Script referenced in the [package.json](./package.json) and used to execute the command-line interface.
-- [src/cli/main.ts](src/cli/main.ts) - The entry point of the command line interface (CLI) of your language.
-- [src/cli/generator.ts](src/cli/generator.ts) - The code generator used by the CLI to write output files from DSL documents.
-- [src/cli/util.ts](src/cli/util.ts) - Utility code for the CLI.
+From the workspace root:
 
-## Instructions
+```
+npm run build
+```
 
-Run `node ./bin/cli` to see options for the CLI; `node ./bin/cli generate <file>` generates code for a given DSL file.
+This compiles the CLI into `out/` and wires the executable `bin/cli.js`.
+
+## Usage
+
+```
+node ./bin/cli generate <file> [destination] [options]
+```
+
+Arguments:
+
+- <file>: source Othello DSL file (extensions: as configured by the language)
+- [destination]: optional destination file. If omitted, defaults to `<file>.ascii` in the same directory.
+
+Options:
+
+- -o, --out <path>  Output file or directory. If a directory, the file will be named `<file>.ascii`.
+- --stdout          Print the generated ASCII to stdout instead of writing a file.
+
+Examples:
+
+```
+# Write next to the source file
+node ./bin/cli generate examples/variant1/variant1.othello
+
+# Write to a specific file
+node ./bin/cli generate examples/variant1/variant1.othello -o build/board.txt
+
+# Write into a directory
+node ./bin/cli generate examples/variant1/variant1.othello -o build/
+
+# Print to console
+node ./bin/cli generate examples/variant1/variant1.othello --stdout
+```

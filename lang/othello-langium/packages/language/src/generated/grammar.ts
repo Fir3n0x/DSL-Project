@@ -1286,6 +1286,17 @@ export const OthelloDslGrammar = (): Grammar => loadedOthelloDslGrammar ?? (load
     },
     {
       "$type": "TerminalRule",
+      "name": "BOOLEAN",
+      "definition": {
+        "$type": "RegexToken",
+        "regex": "/true|false/",
+        "parenthesized": false
+      },
+      "fragment": false,
+      "hidden": false
+    },
+    {
+      "$type": "TerminalRule",
       "hidden": true,
       "name": "ML_COMMENT",
       "definition": {
