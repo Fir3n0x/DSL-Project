@@ -30,7 +30,7 @@ export const OthelloDslGrammar = (): Grammar => loadedOthelloDslGrammar ?? (load
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@14"
+                "$ref": "#/rules@18"
               },
               "arguments": []
             }
@@ -41,12 +41,25 @@ export const OthelloDslGrammar = (): Grammar => loadedOthelloDslGrammar ?? (load
           },
           {
             "$type": "Assignment",
-            "feature": "board",
+            "feature": "config",
             "operator": "=",
             "terminal": {
               "$type": "RuleCall",
               "rule": {
                 "$ref": "#/rules@1"
+              },
+              "arguments": []
+            },
+            "cardinality": "?"
+          },
+          {
+            "$type": "Assignment",
+            "feature": "board",
+            "operator": "=",
+            "terminal": {
+              "$type": "RuleCall",
+              "rule": {
+                "$ref": "#/rules@5"
               },
               "arguments": []
             }
@@ -58,7 +71,7 @@ export const OthelloDslGrammar = (): Grammar => loadedOthelloDslGrammar ?? (load
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@2"
+                "$ref": "#/rules@6"
               },
               "arguments": []
             }
@@ -70,7 +83,7 @@ export const OthelloDslGrammar = (): Grammar => loadedOthelloDslGrammar ?? (load
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@4"
+                "$ref": "#/rules@8"
               },
               "arguments": []
             }
@@ -82,7 +95,7 @@ export const OthelloDslGrammar = (): Grammar => loadedOthelloDslGrammar ?? (load
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@6"
+                "$ref": "#/rules@10"
               },
               "arguments": []
             }
@@ -94,7 +107,7 @@ export const OthelloDslGrammar = (): Grammar => loadedOthelloDslGrammar ?? (load
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@7"
+                "$ref": "#/rules@11"
               },
               "arguments": []
             }
@@ -105,6 +118,163 @@ export const OthelloDslGrammar = (): Grammar => loadedOthelloDslGrammar ?? (load
           }
         ]
       },
+      "fragment": false,
+      "parameters": []
+    },
+    {
+      "$type": "ParserRule",
+      "name": "Config",
+      "definition": {
+        "$type": "Group",
+        "elements": [
+          {
+            "$type": "Keyword",
+            "value": "config"
+          },
+          {
+            "$type": "Keyword",
+            "value": "{"
+          },
+          {
+            "$type": "Assignment",
+            "feature": "settings",
+            "operator": "+=",
+            "terminal": {
+              "$type": "RuleCall",
+              "rule": {
+                "$ref": "#/rules@2"
+              },
+              "arguments": []
+            },
+            "cardinality": "*"
+          },
+          {
+            "$type": "Keyword",
+            "value": "}"
+          }
+        ]
+      },
+      "entry": false,
+      "fragment": false,
+      "parameters": []
+    },
+    {
+      "$type": "ParserRule",
+      "name": "ConfigSetting",
+      "definition": {
+        "$type": "Group",
+        "elements": [
+          {
+            "$type": "Assignment",
+            "feature": "name",
+            "operator": "=",
+            "terminal": {
+              "$type": "RuleCall",
+              "rule": {
+                "$ref": "#/rules@18"
+              },
+              "arguments": []
+            }
+          },
+          {
+            "$type": "Keyword",
+            "value": "="
+          },
+          {
+            "$type": "Assignment",
+            "feature": "value",
+            "operator": "=",
+            "terminal": {
+              "$type": "RuleCall",
+              "rule": {
+                "$ref": "#/rules@3"
+              },
+              "arguments": []
+            }
+          }
+        ]
+      },
+      "entry": false,
+      "fragment": false,
+      "parameters": []
+    },
+    {
+      "$type": "ParserRule",
+      "name": "ConfigValue",
+      "definition": {
+        "$type": "Alternatives",
+        "elements": [
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@19"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@20"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@21"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@4"
+            },
+            "arguments": []
+          }
+        ]
+      },
+      "entry": false,
+      "fragment": false,
+      "parameters": []
+    },
+    {
+      "$type": "ParserRule",
+      "name": "BoardSizeValue",
+      "definition": {
+        "$type": "Group",
+        "elements": [
+          {
+            "$type": "Assignment",
+            "feature": "rows",
+            "operator": "=",
+            "terminal": {
+              "$type": "RuleCall",
+              "rule": {
+                "$ref": "#/rules@19"
+              },
+              "arguments": []
+            }
+          },
+          {
+            "$type": "Keyword",
+            "value": "x"
+          },
+          {
+            "$type": "Assignment",
+            "feature": "columns",
+            "operator": "=",
+            "terminal": {
+              "$type": "RuleCall",
+              "rule": {
+                "$ref": "#/rules@19"
+              },
+              "arguments": []
+            }
+          }
+        ]
+      },
+      "entry": false,
       "fragment": false,
       "parameters": []
     },
@@ -125,7 +295,7 @@ export const OthelloDslGrammar = (): Grammar => loadedOthelloDslGrammar ?? (load
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@15"
+                "$ref": "#/rules@19"
               },
               "arguments": []
             }
@@ -141,7 +311,7 @@ export const OthelloDslGrammar = (): Grammar => loadedOthelloDslGrammar ?? (load
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@15"
+                "$ref": "#/rules@19"
               },
               "arguments": []
             }
@@ -173,7 +343,7 @@ export const OthelloDslGrammar = (): Grammar => loadedOthelloDslGrammar ?? (load
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@3"
+                "$ref": "#/rules@7"
               },
               "arguments": []
             }
@@ -185,7 +355,7 @@ export const OthelloDslGrammar = (): Grammar => loadedOthelloDslGrammar ?? (load
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@3"
+                "$ref": "#/rules@7"
               },
               "arguments": []
             }
@@ -231,7 +401,7 @@ export const OthelloDslGrammar = (): Grammar => loadedOthelloDslGrammar ?? (load
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@14"
+                "$ref": "#/rules@18"
               },
               "arguments": []
             }
@@ -263,7 +433,7 @@ export const OthelloDslGrammar = (): Grammar => loadedOthelloDslGrammar ?? (load
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@5"
+                "$ref": "#/rules@9"
               },
               "arguments": []
             },
@@ -296,7 +466,7 @@ export const OthelloDslGrammar = (): Grammar => loadedOthelloDslGrammar ?? (load
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@6"
+                "$ref": "#/rules@10"
               },
               "arguments": []
             }
@@ -350,7 +520,7 @@ export const OthelloDslGrammar = (): Grammar => loadedOthelloDslGrammar ?? (load
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@15"
+                "$ref": "#/rules@19"
               },
               "arguments": []
             }
@@ -366,7 +536,7 @@ export const OthelloDslGrammar = (): Grammar => loadedOthelloDslGrammar ?? (load
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@15"
+                "$ref": "#/rules@19"
               },
               "arguments": []
             }
@@ -402,7 +572,7 @@ export const OthelloDslGrammar = (): Grammar => loadedOthelloDslGrammar ?? (load
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@8"
+                "$ref": "#/rules@12"
               },
               "arguments": []
             }
@@ -414,7 +584,7 @@ export const OthelloDslGrammar = (): Grammar => loadedOthelloDslGrammar ?? (load
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@11"
+                "$ref": "#/rules@15"
               },
               "arguments": []
             }
@@ -426,7 +596,7 @@ export const OthelloDslGrammar = (): Grammar => loadedOthelloDslGrammar ?? (load
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@12"
+                "$ref": "#/rules@16"
               },
               "arguments": []
             }
@@ -493,7 +663,7 @@ export const OthelloDslGrammar = (): Grammar => loadedOthelloDslGrammar ?? (load
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@9"
+                "$ref": "#/rules@13"
               },
               "arguments": []
             }
@@ -509,7 +679,7 @@ export const OthelloDslGrammar = (): Grammar => loadedOthelloDslGrammar ?? (load
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@10"
+                "$ref": "#/rules@14"
               },
               "arguments": []
             }
@@ -623,7 +793,7 @@ export const OthelloDslGrammar = (): Grammar => loadedOthelloDslGrammar ?? (load
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@9"
+                "$ref": "#/rules@13"
               },
               "arguments": []
             }
@@ -698,6 +868,17 @@ export const OthelloDslGrammar = (): Grammar => loadedOthelloDslGrammar ?? (load
       "definition": {
         "$type": "RegexToken",
         "regex": "/\\"(\\\\\\\\.|[^\\"\\\\\\\\])*\\"|'(\\\\\\\\.|[^'\\\\\\\\])*'/",
+        "parenthesized": false
+      },
+      "fragment": false,
+      "hidden": false
+    },
+    {
+      "$type": "TerminalRule",
+      "name": "BOOLEAN",
+      "definition": {
+        "$type": "RegexToken",
+        "regex": "/true|false/",
         "parenthesized": false
       },
       "fragment": false,
