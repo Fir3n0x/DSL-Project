@@ -48,7 +48,7 @@ game Othello16x16 {
         move {
             type placement
             valid if captures_in_any_direction(r,c)
-            effect flip_captured_stones(r,c)
+            effect flip_captured_pieces(r,c)
         }
         end when captures_in_any_direction(r,c)
         scoring count_pieces_per_player
