@@ -2,7 +2,9 @@ grammar OthelloDsl
 
 entry Game:
     'game' name=ID '{'
-        (config=Config)?
+        (compileTime=CompileTimeBlock)?
+        (runTime=RunTimeBlock)?
+        (ui=UIBlock)?
         board=Board
         players=Players
         initial=Initial
@@ -11,23 +13,69 @@ entry Game:
     '}'
 ;
 
-Config:
-    'config' '{'
-        (settings+=ConfigSetting)*
+// ----- COMPILE-TIME -----
+
+CompileTimeBlock:
+    'compile-time' '{'
+        (parameters+=CTParameter)*
     '}'
 ;
 
-ConfigSetting:
-    name=ID '=' value=ConfigValue
+CTParameter:
+    name=ID '=' value=CTValue
 ;
 
-ConfigValue:
-    INT | STRING | BOOLEAN | BoardSizeValue
+CTValue returns string:
+    INT | STRING | BOOLEAN | ID
 ;
 
-BoardSizeValue:
-    rows=INT 'x' columns=INT
+terminal BOOLEAN: /true|false/;
+
+// ----- RUN-TIME -----
+
+RunTimeBlock:
+    'run-time' '{'
+        (parameters+=RTParameter)*
+    '}'
 ;
+
+RTParameter:
+    name=ID '=' value=RTValue
+;
+
+RTValue returns string:
+    INT | STRING | BOOLEAN
+;
+
+// ----- UI / SKIN -----
+
+UIBlock:
+    'ui' '{'
+        (theme=ThemeBlock)?
+        (layout=LayoutBlock)?
+    '}'
+;
+
+ThemeBlock:
+    'theme' '{'
+        'name' '=' STRING
+        ('sprites' '{' sprites+=SpriteDef* '}')?
+    '}'
+;
+
+SpriteDef:
+    name=ID '=' STRING // chemin du sprite
+;
+
+LayoutBlock:
+    'layout' '{'
+        ('grid' '{' rows=INT 'x' columns=INT '}')?
+        ('hands' '{' left=ID? right=ID? '}')?
+        ('scaling' '=' (INT | STRING))?
+    '}'
+;
+
+// ----- EXISTANT -----
 
 Board:
     'board' rows=INT 'x' columns=INT 
@@ -90,12 +138,12 @@ ScoringRule returns string:
     'scoring' 'count_pieces_per_player'
 ;
 
+// ----- TERMINALS -----
 
 hidden terminal WS: /\s+/;
 terminal ID: /[_a-zA-Z][\w_]*/;
 terminal INT returns number: /[0-9]+/;
 terminal STRING: /"(\\.|[^"\\])*"|'(\\.|[^'\\])*'/;
-terminal BOOLEAN: /true|false/;
 
 hidden terminal ML_COMMENT: /\/\*[\s\S]*?\*\//;
 hidden terminal SL_COMMENT: /\/\/[^\n\r]*/;

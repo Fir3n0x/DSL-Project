@@ -7,9 +7,11 @@
 import * as langium from 'langium';
 
 export const OthelloTerminals = {
+    BOOLEAN: /true|false/,
     WS: /\s+/,
     ID: /[_a-zA-Z][\w_]*/,
     INT: /[0-9]+/,
+    STRING: /"(\\.|[^"\\])*"|'(\\.|[^'\\])*'/,
     ML_COMMENT: /\/\*[\s\S]*?\*\//,
     SL_COMMENT: /\/\/[^\n\r]*/,
 };
@@ -26,22 +28,32 @@ export type OthelloKeywordNames =
     | "c"
     | "captures_in_any_direction"
     | "cell"
+    | "compile-time"
     | "count_pieces_per_player"
     | "effect"
     | "end"
     | "flip_captured_stones"
     | "game"
+    | "grid"
+    | "hands"
     | "if"
     | "initial"
+    | "layout"
     | "move"
+    | "name"
     | "pass"
     | "placement"
     | "players"
     | "position"
     | "r"
     | "rules"
+    | "run-time"
+    | "scaling"
     | "scoring"
+    | "sprites"
+    | "theme"
     | "type"
+    | "ui"
     | "valid"
     | "when"
     | "white"
@@ -85,6 +97,21 @@ export function isCellAssign(item: unknown): item is CellAssign {
     return reflection.isInstance(item, CellAssign.$type);
 }
 
+export interface CompileTimeBlock extends langium.AstNode {
+    readonly $container: Game;
+    readonly $type: 'CompileTimeBlock';
+    parameters: Array<CTParameter>;
+}
+
+export const CompileTimeBlock = {
+    $type: 'CompileTimeBlock',
+    parameters: 'parameters'
+} as const;
+
+export function isCompileTimeBlock(item: unknown): item is CompileTimeBlock {
+    return reflection.isInstance(item, CompileTimeBlock.$type);
+}
+
 export interface ConditionExpr extends langium.AstNode {
     readonly $container: EndRule | MoveRule;
     readonly $type: 'ConditionExpr';
@@ -99,6 +126,26 @@ export const ConditionExpr = {
 export function isConditionExpr(item: unknown): item is ConditionExpr {
     return reflection.isInstance(item, ConditionExpr.$type);
 }
+
+export interface CTParameter extends langium.AstNode {
+    readonly $container: CompileTimeBlock;
+    readonly $type: 'CTParameter';
+    name: string;
+    value: CTValue;
+}
+
+export const CTParameter = {
+    $type: 'CTParameter',
+    name: 'name',
+    value: 'value'
+} as const;
+
+export function isCTParameter(item: unknown): item is CTParameter {
+    return reflection.isInstance(item, CTParameter.$type);
+}
+
+export type CTValue = number | string;
+
 
 export type EffectExpr = string;
 
@@ -124,21 +171,27 @@ export function isEndRule(item: unknown): item is EndRule {
 export interface Game extends langium.AstNode {
     readonly $type: 'Game';
     board: Board;
+    compileTime?: CompileTimeBlock;
     initial: Initial;
     name: string;
     players: Players;
     position: Position;
     rules: Rules;
+    runTime?: RunTimeBlock;
+    ui?: UIBlock;
 }
 
 export const Game = {
     $type: 'Game',
     board: 'board',
+    compileTime: 'compileTime',
     initial: 'initial',
     name: 'name',
     players: 'players',
     position: 'position',
-    rules: 'rules'
+    rules: 'rules',
+    runTime: 'runTime',
+    ui: 'ui'
 } as const;
 
 export function isGame(item: unknown): item is Game {
@@ -158,6 +211,27 @@ export const Initial = {
 
 export function isInitial(item: unknown): item is Initial {
     return reflection.isInstance(item, Initial.$type);
+}
+
+export interface LayoutBlock extends langium.AstNode {
+    readonly $container: UIBlock;
+    readonly $type: 'LayoutBlock';
+    columns?: number;
+    left?: string;
+    right?: string;
+    rows?: number;
+}
+
+export const LayoutBlock = {
+    $type: 'LayoutBlock',
+    columns: 'columns',
+    left: 'left',
+    right: 'right',
+    rows: 'rows'
+} as const;
+
+export function isLayoutBlock(item: unknown): item is LayoutBlock {
+    return reflection.isInstance(item, LayoutBlock.$type);
 }
 
 export interface MoveRule extends langium.AstNode {
@@ -230,6 +304,26 @@ export function isPosition(item: unknown): item is Position {
     return reflection.isInstance(item, Position.$type);
 }
 
+export interface RTParameter extends langium.AstNode {
+    readonly $container: RunTimeBlock;
+    readonly $type: 'RTParameter';
+    name: string;
+    value: RTValue;
+}
+
+export const RTParameter = {
+    $type: 'RTParameter',
+    name: 'name',
+    value: 'value'
+} as const;
+
+export function isRTParameter(item: unknown): item is RTParameter {
+    return reflection.isInstance(item, RTParameter.$type);
+}
+
+export type RTValue = number | string;
+
+
 export interface Rules extends langium.AstNode {
     readonly $container: Game;
     readonly $type: 'Rules';
@@ -249,24 +343,94 @@ export function isRules(item: unknown): item is Rules {
     return reflection.isInstance(item, Rules.$type);
 }
 
+export interface RunTimeBlock extends langium.AstNode {
+    readonly $container: Game;
+    readonly $type: 'RunTimeBlock';
+    parameters: Array<RTParameter>;
+}
+
+export const RunTimeBlock = {
+    $type: 'RunTimeBlock',
+    parameters: 'parameters'
+} as const;
+
+export function isRunTimeBlock(item: unknown): item is RunTimeBlock {
+    return reflection.isInstance(item, RunTimeBlock.$type);
+}
+
 export type ScoringRule = string;
 
 export function isScoringRule(item: unknown): item is ScoringRule {
     return typeof item === 'string';
 }
 
+export interface SpriteDef extends langium.AstNode {
+    readonly $container: ThemeBlock;
+    readonly $type: 'SpriteDef';
+    name: string;
+}
+
+export const SpriteDef = {
+    $type: 'SpriteDef',
+    name: 'name'
+} as const;
+
+export function isSpriteDef(item: unknown): item is SpriteDef {
+    return reflection.isInstance(item, SpriteDef.$type);
+}
+
+export interface ThemeBlock extends langium.AstNode {
+    readonly $container: UIBlock;
+    readonly $type: 'ThemeBlock';
+    sprites: Array<SpriteDef>;
+}
+
+export const ThemeBlock = {
+    $type: 'ThemeBlock',
+    sprites: 'sprites'
+} as const;
+
+export function isThemeBlock(item: unknown): item is ThemeBlock {
+    return reflection.isInstance(item, ThemeBlock.$type);
+}
+
+export interface UIBlock extends langium.AstNode {
+    readonly $container: Game;
+    readonly $type: 'UIBlock';
+    layout?: LayoutBlock;
+    theme?: ThemeBlock;
+}
+
+export const UIBlock = {
+    $type: 'UIBlock',
+    layout: 'layout',
+    theme: 'theme'
+} as const;
+
+export function isUIBlock(item: unknown): item is UIBlock {
+    return reflection.isInstance(item, UIBlock.$type);
+}
+
 export type OthelloAstType = {
     Board: Board
+    CTParameter: CTParameter
     CellAssign: CellAssign
+    CompileTimeBlock: CompileTimeBlock
     ConditionExpr: ConditionExpr
     EndRule: EndRule
     Game: Game
     Initial: Initial
+    LayoutBlock: LayoutBlock
     MoveRule: MoveRule
     Player: Player
     Players: Players
     Position: Position
+    RTParameter: RTParameter
     Rules: Rules
+    RunTimeBlock: RunTimeBlock
+    SpriteDef: SpriteDef
+    ThemeBlock: ThemeBlock
+    UIBlock: UIBlock
 }
 
 export class OthelloAstReflection extends langium.AbstractAstReflection {
@@ -283,6 +447,18 @@ export class OthelloAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: []
         },
+        CTParameter: {
+            name: CTParameter.$type,
+            properties: {
+                name: {
+                    name: CTParameter.name
+                },
+                value: {
+                    name: CTParameter.value
+                }
+            },
+            superTypes: []
+        },
         CellAssign: {
             name: CellAssign.$type,
             properties: {
@@ -291,6 +467,16 @@ export class OthelloAstReflection extends langium.AbstractAstReflection {
                 },
                 position: {
                     name: CellAssign.position
+                }
+            },
+            superTypes: []
+        },
+        CompileTimeBlock: {
+            name: CompileTimeBlock.$type,
+            properties: {
+                parameters: {
+                    name: CompileTimeBlock.parameters,
+                    defaultValue: []
                 }
             },
             superTypes: []
@@ -319,6 +505,9 @@ export class OthelloAstReflection extends langium.AbstractAstReflection {
                 board: {
                     name: Game.board
                 },
+                compileTime: {
+                    name: Game.compileTime
+                },
                 initial: {
                     name: Game.initial
                 },
@@ -333,6 +522,12 @@ export class OthelloAstReflection extends langium.AbstractAstReflection {
                 },
                 rules: {
                     name: Game.rules
+                },
+                runTime: {
+                    name: Game.runTime
+                },
+                ui: {
+                    name: Game.ui
                 }
             },
             superTypes: []
@@ -343,6 +538,24 @@ export class OthelloAstReflection extends langium.AbstractAstReflection {
                 cells: {
                     name: Initial.cells,
                     defaultValue: []
+                }
+            },
+            superTypes: []
+        },
+        LayoutBlock: {
+            name: LayoutBlock.$type,
+            properties: {
+                columns: {
+                    name: LayoutBlock.columns
+                },
+                left: {
+                    name: LayoutBlock.left
+                },
+                right: {
+                    name: LayoutBlock.right
+                },
+                rows: {
+                    name: LayoutBlock.rows
                 }
             },
             superTypes: []
@@ -398,6 +611,18 @@ export class OthelloAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: []
         },
+        RTParameter: {
+            name: RTParameter.$type,
+            properties: {
+                name: {
+                    name: RTParameter.name
+                },
+                value: {
+                    name: RTParameter.value
+                }
+            },
+            superTypes: []
+        },
         Rules: {
             name: Rules.$type,
             properties: {
@@ -409,6 +634,47 @@ export class OthelloAstReflection extends langium.AbstractAstReflection {
                 },
                 scoring: {
                     name: Rules.scoring
+                }
+            },
+            superTypes: []
+        },
+        RunTimeBlock: {
+            name: RunTimeBlock.$type,
+            properties: {
+                parameters: {
+                    name: RunTimeBlock.parameters,
+                    defaultValue: []
+                }
+            },
+            superTypes: []
+        },
+        SpriteDef: {
+            name: SpriteDef.$type,
+            properties: {
+                name: {
+                    name: SpriteDef.name
+                }
+            },
+            superTypes: []
+        },
+        ThemeBlock: {
+            name: ThemeBlock.$type,
+            properties: {
+                sprites: {
+                    name: ThemeBlock.sprites,
+                    defaultValue: []
+                }
+            },
+            superTypes: []
+        },
+        UIBlock: {
+            name: UIBlock.$type,
+            properties: {
+                layout: {
+                    name: UIBlock.layout
+                },
+                theme: {
+                    name: UIBlock.theme
                 }
             },
             superTypes: []
