@@ -9,7 +9,6 @@ game Othello8x8 {
 
     run-time {
         theme = "dark"
-        animationSpeed = 150
         showHints = true
         timer = 30
     }
