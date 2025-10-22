@@ -1,0 +1,35 @@
+    A B C D E F G H
+  +-----------------+
+1 | . . . . . . . . |
+2 | . . . . . . . . |
+3 | . . . . . . . . |
+4 | . . . W B . . . |
+5 | . . . B W . . . |
+6 | . . . . . . . . |
+7 | . . . . . . . . |
+8 | . . . . . . . . |
+  +-----------------+
+   Black: ●  White: ○
+
+
+🔹 B ou ● = pion noir (Alice)
+🔹 W ou ○ = pion blanc (Bob)
+🔹 . = case vide
+
+
+Le plateau est un carré 8x8, centré autour des quatre pions initiaux standard d’Othello.
+
+
+| Élément visuel                   | Élément DSL                         | Description                                         |
+| -------------------------------- | ----------------------------------- | --------------------------------------------------- |
+| `.`, `B`, `W`                    | `initial { ... }`                   | Définit les positions de départ des pions           |
+| `8x8`                            | `board 8x8`                         | Taille du plateau spécifiée dans la section `board` |
+| `Alice`, `Bob`                   | `players { black Alice white Bob }` | Noms et couleurs des joueurs                        |
+| `retro`                          | `ui.theme.name`                     | Thème d’affichage utilisé dans l’interface          |
+| `square`                         | `compile-time.boardType`            | Type de plateau défini à la compilation             |
+| `flip_captured_stones(r,c)`      | `rules.move.effect`                 | Effet appliqué lorsqu’un coup est joué              |
+| `captures_in_any_direction(r,c)` | `rules.move.valid`                  | Condition de validité d’un coup                     |
+| `count_pieces_per_player`        | `rules.scoring`                     | Méthode de calcul du score                          |
+| `timer = 30`                     | `run-time.timer`                    | Temps limite par joueur (30s)                       |
+
+

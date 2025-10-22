@@ -1,78 +1,145 @@
-@startuml Othello DSL
-title Othello DSL - Abstract Syntax Tree (AST)
+@startuml
+title Métamodèle - Othello DSL
+
+' ======================
+' Concepts principaux
+' ======================
 
 class Game {
-    name: ID
-    board: Board
-    players: Players
-    initial: Initial
-    position: Position
-    rules: Rules
+  +name: ID
+}
+
+class CompileTimeBlock {
+  +parameters: CTParameter[*]
+}
+
+class CTParameter {
+  +name: ID
+  +value: CTValue
+}
+
+class CTValue {
+  +value: string
+}
+
+class RunTimeBlock {
+  +parameters: RTParameter[*]
+}
+
+class RTParameter {
+  +name: ID
+  +value: RTValue
+}
+
+class RTValue {
+  +value: string
+}
+
+class UIBlock {
+  +theme: ThemeBlock
+  +layout: LayoutBlock
+}
+
+class ThemeBlock {
+  +name: string
+  +sprites: SpriteDef[*]
+}
+
+class SpriteDef {
+  +name: ID
+  +path: string
+}
+
+class LayoutBlock {
+  +rows: int
+  +columns: int
+  +left: ID
+  +right: ID
+  +scaling: string
 }
 
 class Board {
-    rows: int
-    columns: int
+  +rows: int
+  +columns: int
 }
 
 class Players {
-    black: Player
-    white: Player
+  +black: Player
+  +white: Player
 }
 
 class Player {
-    color: "black" | "white"
-    name: ID
+  +color: string  <<"black" | "white">>
+  +name: ID
 }
 
 class Initial {
-    cells: CellAssign[*]
+  +cells: CellAssign[*]
 }
 
 class CellAssign {
-    position: Position
-    color: "black" | "white"
+  +position: Position
+  +color: string  <<"black" | "white">>
 }
 
 class Position {
-    row: int
-    column: int
+  +row: int
+  +column: int
 }
 
 class Rules {
-    move: MoveRule
-    end: EndRule
-    scoring: ScoringRule
+  +move: MoveRule
+  +end: EndRule
+  +scoring: ScoringRule
 }
 
 class MoveRule {
-    type: "placement" | "pass"
-    condition: ConditionExpr
-    effect: EffectExpr
+  +type: string  <<"placement" | "pass">>
+  +condition: ConditionExpr
+  +effect: EffectExpr
 }
 
 class ConditionExpr {
-    name: string = "captures_in_any_direction"
+  +name: string = "captures_in_any_direction"
 }
 
 class EffectExpr {
-    value: string = "flip_captured_stones"
+  +effect: string = "flip_captured_stones"
 }
 
 class EndRule {
-    condition: ConditionExpr
+  +condition: ConditionExpr
 }
 
 class ScoringRule {
-    value: string = "count_pieces_per_player"
+  +rule: string = "count_pieces_per_player"
 }
 
+
+' ======================
 ' Relations
-Game --> Board
-Game --> Players
-Game --> Initial
-Game --> Position
-Game --> Rules
+' ======================
+
+Game --> CompileTimeBlock : compileTime [0..1]
+Game --> RunTimeBlock : runTime [0..1]
+Game --> UIBlock : ui [0..1]
+Game --> Board : board [1]
+Game --> Players : players [1]
+Game --> Initial : initial [1]
+Game --> Position : position [1]
+Game --> Rules : rules [1]
+
+CompileTimeBlock --> CTParameter
+CTParameter --> CTValue
+
+RunTimeBlock --> RTParameter
+RTParameter --> RTValue
+
+UIBlock --> ThemeBlock
+UIBlock --> LayoutBlock
+ThemeBlock --> SpriteDef
+
+LayoutBlock --> Board
 
 Players --> Player
 Initial --> CellAssign

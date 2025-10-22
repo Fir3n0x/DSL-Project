@@ -1,0 +1,56 @@
+game Othello8x8 {
+
+    compile-time {
+        boardType = "hexagon"
+        scoreGoal = "max"
+        allowDiagonal = true
+        initialPosition = "dynamic"
+    }
+
+    run-time {
+        theme = "light"
+        showHints = true
+        timer = 30
+    }
+
+    ui {
+        theme {
+            name = "retro"
+            sprites {
+                black = "assets/black.png"
+                white = "assets/white.png"
+                board = "assets/board16x16.png"
+            }
+        }
+        layout {
+            grid { 8x8 }
+            hands { left black right white }
+            scaling = "fit"
+        }
+    }
+
+    board 8x8
+    players {
+        black Alice
+        white Bob
+    }
+
+    initial {
+        cell position(4,4) = white
+        cell position(5,5) = white
+        cell position(4,5) = black
+        cell position(5,4) = black
+    }
+
+    position (1,1)
+
+    rules {
+        move {
+            type placement
+            valid if captures_in_any_direction(r,c)
+            effect flip_captured_pieces(r,c)
+        }
+        end when captures_in_any_direction(r,c)
+        scoring count_pieces_per_player
+    }
+}
