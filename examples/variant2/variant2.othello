@@ -1,16 +1,17 @@
 game Othello8x8 {
 
     compile-time {
-        variant = "classic"
         boardType = "square"
-        ruleSet = "othello"
+        scoreGoal = "min"
         allowDiagonal = true
+        initialPosition = "dynamic"
     }
 
     run-time {
         theme = "dark"
         animationSpeed = 150
         showHints = true
+        timer = 45
     }
 
     ui {
