@@ -1,5 +1,5 @@
 import type { ValidationChecks, ValidationAcceptor } from 'langium';
-import type { OthelloAstType, Game } from './generated/ast.js';
+import type { OthelloAstType, Game } from '../out/generated/ast.js';
 import type { OthelloServices } from './othello-module.js';
 
 /**
@@ -40,7 +40,7 @@ export class OthelloValidator {
 
     checkTimer(game: Game, accept: ValidationAcceptor): void {
         if (game.runTime?.parameters) {
-            const timerParam = game.runTime.parameters.find(p => p.name === 'timer');
+            const timerParam = game.runTime.parameters.find((p: { name: string; }) => p.name === 'timer');
             if (timerParam && typeof timerParam.value === 'number'){
                 if (timerParam.value <= 0) {
                     accept('error', 'The timer value must be a positive number.', { node: timerParam });

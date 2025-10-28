@@ -26,5 +26,8 @@
         "packages/language",
         "packages/cli",
         "packages/extension"
-    ]
+    ],
+    "dependencies": {
+        "langium": "^4.1.0"
+    }
 }

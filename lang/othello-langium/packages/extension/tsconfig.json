@@ -1,6 +1,10 @@
 {
     "extends": "../../tsconfig.json",
     "compilerOptions": {
+        "moduleResolution": "nodenext",
+        "module": "esnext",
+        "target": "es2020",
+        "types": ["node"],
         "noEmit": true,
         "rootDir": "."
     },
@@ -10,6 +14,7 @@
         }
     ],
     "include": [
-        "src/**/*.ts"
+        "src/**/*.ts",
+        "../cli/src/**/*.ts"
     ]
 }
