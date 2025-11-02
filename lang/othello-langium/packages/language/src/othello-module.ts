@@ -1,6 +1,6 @@
 import { type Module, inject } from 'langium';
 import { createDefaultModule, createDefaultSharedModule, type DefaultSharedModuleContext, type LangiumServices, type LangiumSharedServices, type PartialLangiumServices } from 'langium/lsp';
-import { OthelloDslGeneratedModule, OthelloGeneratedSharedModule } from '../out/generated/module.js';
+import { OthelloDslGeneratedModule, OthelloGeneratedSharedModule } from './generated/module.js';
 import { OthelloValidator, registerValidationChecks } from './othello-validator.js';
 
 /**

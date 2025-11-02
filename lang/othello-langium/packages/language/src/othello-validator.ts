@@ -1,5 +1,5 @@
 import type { ValidationChecks, ValidationAcceptor } from 'langium';
-import type { OthelloAstType, Game } from '../out/generated/ast.js';
+import type { OthelloAstType, Game } from './generated/ast.js';
 import type { OthelloServices } from './othello-module.js';
 
 /**

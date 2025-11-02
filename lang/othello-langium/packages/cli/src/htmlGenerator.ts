@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { CompositeGeneratorNode, NL, toString } from 'langium/generate';
 import { type DefaultSharedModuleContext } from 'langium/lsp';
-import { extractAstNode } from '../../cli/out/util.js';
+import { extractAstNode } from '../../cli/src/util.js';
 import { createOthelloServices } from '../../language/src/othello-module.js';
 import type { Game } from '../../language/out/generated/ast.js';
 

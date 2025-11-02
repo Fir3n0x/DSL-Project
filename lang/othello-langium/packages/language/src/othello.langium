@@ -17,7 +17,7 @@ entry Game:
 
 CompileTimeBlock:
     'compile-time' '{'
-        (parameters+=CTParameter)*
+        parameters+=CTParameter*
     '}'
 ;
 
@@ -35,7 +35,7 @@ terminal BOOLEAN: /true|false/;
 
 RunTimeBlock:
     'run-time' '{'
-        (parameters+=RTParameter)*
+        parameters+=RTParameter*
     '}'
 ;
 
@@ -58,13 +58,13 @@ UIBlock:
 
 ThemeBlock:
     'theme' '{'
-        'name' '=' STRING
+        'name' '=' name=STRING
         ('sprites' '{' sprites+=SpriteDef* '}')?
     '}'
 ;
 
 SpriteDef:
-    name=ID '=' STRING // chemin du sprite
+    name=ID '=' path=STRING
 ;
 
 LayoutBlock:
@@ -116,7 +116,7 @@ Rules:
 
 MoveRule:
     'move' '{'
-        'type' type=('placement' | 'pass')?
+        ('type' type=('placement' | 'pass'))?
         'valid' 'if' condition=ConditionExpr
         'effect' effect=EffectExpr
     '}'
@@ -127,7 +127,7 @@ ConditionExpr:
 ;
 
 EffectExpr returns string:
-    'flip_captured_stones' '(' 'r' ',' 'c' ')'
+    'flip_captured_pieces' '(' 'r' ',' 'c' ')'
 ;
 
 EndRule:

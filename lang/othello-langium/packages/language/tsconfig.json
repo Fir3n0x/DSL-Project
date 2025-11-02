@@ -1,12 +1,11 @@
-// this file is required for VSCode to work properly
 {
-  "extends": "./tsconfig.src.json",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "noEmit": true,
-    "rootDir": "."
+    "composite": true,
+    "rootDir": "src",
+    "outDir": "out"
   },
   "include": [
-    "src/**/*",
-    "test/**/*"
+    "src/**/*.ts"
   ]
 }

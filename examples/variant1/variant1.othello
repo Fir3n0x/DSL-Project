@@ -8,28 +8,15 @@ game Othello8x8 {
     }
 
     run-time {
-        theme = "dark"
+        Gtheme = "dark"
         showHints = true
         timer = 30
+        allowUndo = false
+        soundEnabled = true
     }
 
-    ui {
-        theme {
-            name = "retro"
-            sprites {
-                black = "assets/black.png"
-                white = "assets/white.png"
-                board = "assets/board8x8.png"
-            }
-        }
-        layout {
-            grid { 8x8 }
-            hands { left black right white }
-            scaling = "fit"
-        }
-    }
+    board 8 x 8
 
-    board 8x8
     players {
         black Alice
         white Bob

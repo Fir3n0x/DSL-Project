@@ -2,16 +2,11 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "composite": true,
-    "lib": [
-      "ES2017"
-    ],
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "rootDir": "src",
+    "rootDir": ".",
     "outDir": "out"
   },
   "include": [
-    "src/**/*.ts"
+    "**/*.ts"
   ],
   "references": [
     {
