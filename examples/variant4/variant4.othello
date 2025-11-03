@@ -8,28 +8,15 @@ game Othello16x16 {
     }
 
     run-time {
-        theme = "light"
+        Gtheme = "light"
         showHints = true
         timer = 30
+        allowUndo = false
+        soundEnabled = true
     }
 
-    ui {
-        theme {
-            name = "retro"
-            sprites {
-                black = "assets/black.png"
-                white = "assets/white.png"
-                board = "assets/board16x16.png"
-            }
-        }
-        layout {
-            grid { 16x16 }
-            hands { left black right white }
-            scaling = "fit"
-        }
-    }
-
-    board 16x16
+    board 16 x 16
+    
     players {
         black Alice
         white Bob

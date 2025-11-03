@@ -12,20 +12,8 @@
 - **theme** : sombre (dark).
 - **showHints** : activé (true) — l’interface peut montrer des coups possibles.
 - **timer** : 45 secondes par coup — plus de temps que la Variante 1.
-
-## UI / Interface
-
-**Thème** : retro avec sprites personnalisés  
-
-- noir : assets/black.png  
-- blanc : assets/white.png  
-- plateau : assets/board8x8.png  
-
-**Layout** :  
-
-- Grille 8x8  
-- Affichage mains : noir à gauche et blanc à droite  
-- Redimensionnement automatique (fit)  
+- **allowUndo** : false — les joueurs ne peuvent pas annuler leurs coups.
+- **soundEnabled** : true — pas de sons pendant le jeu.
 
 ## Joueurs
 

@@ -11,21 +11,9 @@
 
 - **theme** : clair (light).  
 - **showHints** : activé (true) — l’interface peut montrer des coups possibles.  
-- **timer** : 20 secondes par coup — moins de temps que les variantes précédentes.  
-
-## UI / Interface
-
-**Thème** : sprites personnalisés (démon et ange)
-
-- noir : assets/demon.png  
-- blanc : assets/angel.png  
-- plateau : assets/board16x16.png  
-
-**Layout** :  
-
-- Grille 16x16  
-- Affichage Mains : noir à gauche et blanc à droite  
-- Redimensionnement automatique (fit)  
+- **timer** : 20 secondes par coup — moins de temps que les variantes précédentes.
+- **allowUndo** : false — les joueurs ne peuvent pas annuler leurs coups.
+- **soundEnabled** : true — pas de sons pendant le jeu.
 
 ## Joueurs
 
