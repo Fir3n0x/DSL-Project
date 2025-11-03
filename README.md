@@ -190,20 +190,28 @@ Chaque sous-dossier correspond à une variante d’un même jeu Othello.
 ### Variantes
 
 Les notes relatifs à la variabilité du projet se trouve dans:
+```bash
 /docs/variability.md
+```
 
 De plus, les variantes sont disponibles dans le dossier:
+```bash
 /examples
+```
 
 ### Validation
 
 Les tests de validation (variabilité/contraintes/skin) se trouvent dans:
+```bash
 /lang/othello-langium/packages/language/src/othello-validator.ts
+```
 
 ### Preview
 
 La preview de la variante 1 de notre projet se trouve dans le dossier suivant:
+```bash
 /lang/othello-langium/examples/variant1/preview
+```
 
 
 ## TP3
@@ -213,23 +221,36 @@ L'objectif du TP3 est de passer de la variante d'un jeu spécifiée dans notre D
 ### Grammar Langium
 
 Notre grammaire est disponible à deux endroits différents dans notre projet (comporant le même contenu):
+```bash
 /examples/othelloGrammar.langium
+```
+```bash
 /lang/othello-langium/packages/language/src/othello.langium
+```
 
 ### CLI
 
 La partie CLI et les fichiers qui lui sont associés sont situés dans le dossier:
+```bash
 /lang/othello-langium/packages/cli
+```
 
 De plus, le backend (en html) de la variante 1 de notre projet se situe dans le dossier:
+```bash
 /lang/othello-langium/examples/variant1/preview
+```
 
 Les commandes utilisées pour la génération sont les suivantes:
+```bash
 DSL-Project/lang/othello-langium$ npx tsc (pour compiler les fichiers .ts en .js)
 
+
 DSL-Project/lang/othello-langium$ node packages/cli/bin/cli.js generate ../../examples/variant1/variant1.othello --target=html --out=examples/variant1/preview
+```
 
 ### Tests
 
 Les fichiers de test se situent dans le dossier:
+```bash
 /lang/othello-langium/packages/language/test
+```
