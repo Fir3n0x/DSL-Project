@@ -9,24 +9,24 @@ import { createOthelloServices } from '../../language/src/othello-module.js';
 import type { Game } from '../../language/out/generated/ast.js';
 
 // ==========================
-// 1️⃣ Options de génération
+// Options de génération
 // ==========================
 export type GenerateOptions = {
     destination?: string;
 };
 
 // ==========================
-// 2️⃣ Action principale CLI
+// Action principale CLI
 // ==========================
 export const generateAction = async (fileName: string, opts: GenerateOptions): Promise<void> => {
     const { Othello } = createOthelloServices({} as DefaultSharedModuleContext);
     const model = await extractAstNode<Game>(fileName, Othello);
     const generatedFilePath = generateHTML(model, fileName, opts.destination);
-    console.log(chalk.green(`✅ HTML generated successfully: ${generatedFilePath}`));
+    console.log(chalk.green(`HTML generated successfully: ${generatedFilePath}`));
 };
 
 // ==========================
-// 3️⃣ Commande CLI principale
+// Commande CLI principale
 // ==========================
 export default function (): void {
     const program = new Command();
@@ -42,7 +42,7 @@ export default function (): void {
 }
 
 // ==========================
-// 4️⃣ Génération du HTML
+// Génération du HTML
 // ==========================
 export function generateHTML(model: Game, filePath: string, destination: string | undefined): string {
     const data = extractDestinationAndName(filePath, destination);
@@ -99,7 +99,7 @@ export function generateHTML(model: Game, filePath: string, destination: string 
 }
 
 // ==========================
-// 5️⃣ Extraction du nom & dossier
+// Extraction du nom & dossier
 // ==========================
 function extractDestinationAndName(filePath: string, destination?: string) {
     const name = path.basename(filePath, path.extname(filePath));

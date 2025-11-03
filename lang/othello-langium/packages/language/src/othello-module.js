@@ -1,6 +1,6 @@
 import { inject } from 'langium';
 import { createDefaultModule, createDefaultSharedModule } from 'langium/lsp';
-import { OthelloDslGeneratedModule, OthelloGeneratedSharedModule } from '../out/generated/module.js';
+import { OthelloDslGeneratedModule, OthelloGeneratedSharedModule } from './generated/module.js';
 import { OthelloValidator, registerValidationChecks } from './othello-validator.js';
 /**
  * Dependency injection module that overrides Langium default services and contributes the

@@ -1,27 +1,36 @@
-import { createOthelloServices, OthelloDslLanguageMetaData } from 'othello-language';
-import chalk from 'chalk';
 import { Command } from 'commander';
-import { extractAstNode } from './util.js';
-import { generateOutput } from './generator.js';
 import { NodeFileSystem } from 'langium/node';
 import * as url from 'node:url';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
+import chalk from 'chalk';
+import { createOthelloServices } from '../../language/src/othello-module.js';
+import { extractAstNode } from './util.js';
+import { OthelloDslLanguageMetaData } from '../../language/out/generated/module.js';
+import { generateOutput } from './generator.js';
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 const packagePath = path.resolve(__dirname, '..', 'package.json');
 const packageContent = await fs.readFile(packagePath, 'utf-8');
-export const generateAction = async (source, destinationOrOptions, maybeOptions) => {
-    const services = createOthelloServices(NodeFileSystem).Othello;
-    const model = await extractAstNode(source, services);
-    // Normalize inputs: destination may be omitted if options used
-    const destination = typeof destinationOrOptions === 'string' ? destinationOrOptions : undefined;
-    const options = (typeof destinationOrOptions === 'object' ? destinationOrOptions : maybeOptions) ?? {};
-    const result = generateOutput(model, source, { outPath: options.out ?? destination, stdout: options.stdout === true });
-    if (result.stdout) {
-        console.log(chalk.green('Code generated to stdout successfully.'));
+export const generateAction = async (source, options) => {
+    try {
+        const services = createOthelloServices(NodeFileSystem).Othello;
+        const model = await extractAstNode(source, services);
+        const target = options.target ?? 'ascii';
+        const result = generateOutput(model, source, {
+            target,
+            outPath: options.out,
+            stdout: options.stdout === true,
+        });
+        if (result.stdout) {
+            console.log(result.content);
+        }
+        else if (result.filePath) {
+            console.log(chalk.green(`${target.toUpperCase()} generated successfully: ${result.filePath}`));
+        }
     }
-    else if (result.filePath) {
-        console.log(chalk.green(`Code generated successfully: ${result.filePath}`));
+    catch (error) {
+        console.error(chalk.red('Generation failed:'), error);
+        process.exit(1);
     }
 };
 export default function () {
@@ -31,11 +40,11 @@ export default function () {
     program
         .command('generate')
         .argument('<file>', `source file (possible file extensions: ${fileExtensions})`)
-        .argument('[destination]', 'destination file (optional, can be set via --out)')
-        .option('-o, --out <path>', 'output file or directory (defaults to <source>.ascii)')
-        .option('--stdout', 'print the generated output to stdout instead of writing a file')
-        .description('Generates ASCII output for a provided source file.')
-        .action((file, destination, options) => generateAction(file, destination, options));
+        .option('-t, --target <type>', 'target format: ascii|html|react|engine:pixi|engine:phaser', 'ascii')
+        .option('-o, --out <path>', 'output file or directory')
+        .option('--stdout', 'print output to stdout instead of writing a file')
+        .description('Generates output for a provided source file.')
+        .action(generateAction);
     program.parse(process.argv);
 }
 //# sourceMappingURL=main.js.map

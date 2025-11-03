@@ -1,5 +1,5 @@
 import type { ValidationAcceptor } from 'langium';
-import type { Game } from '../out/generated/ast.js';
+import type { Game } from './generated/ast.js';
 import type { OthelloServices } from './othello-module.js';
 /**
  * Register custom validation checks.

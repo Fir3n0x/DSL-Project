@@ -33,10 +33,10 @@ export const generateAction = async (
         if (result.stdout) {
             console.log(result.content);
         } else if (result.filePath) {
-            console.log(chalk.green(`✅ ${target.toUpperCase()} generated successfully: ${result.filePath}`));
+            console.log(chalk.green(`${target.toUpperCase()} generated successfully: ${result.filePath}`));
         }
     } catch (error) {
-        console.error(chalk.red('❌ Generation failed:'), error);
+        console.error(chalk.red('Generation failed:'), error);
         process.exit(1);
     }
 };

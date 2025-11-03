@@ -3,19 +3,19 @@ import chalk from 'chalk';
 import fs from 'fs';
 import path from 'path';
 import { CompositeGeneratorNode, NL, toString } from 'langium/generate';
-import { extractAstNode } from '../../cli/out/util.js';
+import { extractAstNode } from '../../cli/src/util.js';
 import { createOthelloServices } from '../../language/src/othello-module.js';
 // ==========================
-// 2️⃣ Action principale CLI
+// Action principale CLI
 // ==========================
 export const generateAction = async (fileName, opts) => {
     const { Othello } = createOthelloServices({});
     const model = await extractAstNode(fileName, Othello);
     const generatedFilePath = generateHTML(model, fileName, opts.destination);
-    console.log(chalk.green(`✅ HTML generated successfully: ${generatedFilePath}`));
+    console.log(chalk.green(`HTML generated successfully: ${generatedFilePath}`));
 };
 // ==========================
-// 3️⃣ Commande CLI principale
+// Commande CLI principale
 // ==========================
 export default function () {
     const program = new Command();
@@ -28,7 +28,7 @@ export default function () {
     program.parse(process.argv);
 }
 // ==========================
-// 4️⃣ Génération du HTML
+// Génération du HTML
 // ==========================
 export function generateHTML(model, filePath, destination) {
     const data = extractDestinationAndName(filePath, destination);
@@ -73,7 +73,7 @@ export function generateHTML(model, filePath, destination) {
     return generatedFilePath;
 }
 // ==========================
-// 5️⃣ Extraction du nom & dossier
+// Extraction du nom & dossier
 // ==========================
 function extractDestinationAndName(filePath, destination) {
     const name = path.basename(filePath, path.extname(filePath));

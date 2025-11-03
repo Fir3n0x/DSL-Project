@@ -11,6 +11,6 @@
 
 Presets :
 
--Classic : 8x8, sandwich, most_tokens
--Mini : 4x4, adjacent, most_tokens
--Rapid : 8x8, sandwich, 2 coups/tour
+- Classic : 8x8, sandwich, most_tokens
+- Mini : 4x4, adjacent, most_tokens
+- Rapid : 8x8, sandwich, 2 coups/tour
