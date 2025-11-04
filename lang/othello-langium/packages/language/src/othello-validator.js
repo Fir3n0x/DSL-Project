@@ -24,6 +24,8 @@ export class OthelloValidator {
     // TODO: Add logic here for validation checks of properties
     // See doc : https://langium.org/docs/learn/workflow/create_validations/
     checkBoardSize(game, accept) {
+        if (!game.board)
+            return; // pas de board => rien à valider
         if (game.board.rows <= 2 || game.board.columns <= 2) {
             accept('error', 'The board must have at least 3 rows and 3 columns.', { node: game.board });
         }
@@ -58,6 +60,8 @@ export class OthelloValidator {
         }
     }
     checkMoveValidity(game, accept) {
+        if (!game.board || !game.initial)
+            return; // pas de board => rien à valider
         const rows = game.board.rows;
         const cols = game.board.columns;
         // Vérifier toutes les positions initiales
