@@ -23,10 +23,10 @@ game Othello16x16 {
     }
 
     initial {
-        cell position(4,4) = white
-        cell position(5,5) = white
-        cell position(4,5) = black
-        cell position(5,4) = black
+        cell position(8,8) = white
+        cell position(9,9) = white
+        cell position(8,9) = black
+        cell position(9,8) = black
     }
 
     position (1,1)

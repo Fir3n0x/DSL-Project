@@ -22,10 +22,8 @@
 
 ## Position initiale
 
-Même configuration classique :  
-
-- Blanc : (4,4), (5,5)  
-- Noir : (4,5), (5,4)  
+- Blanc : (8,8), (9,9)  
+- Noir : (8,9), (9,8)  
 
 ## Règles du jeu
 
