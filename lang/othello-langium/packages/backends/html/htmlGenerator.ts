@@ -4,14 +4,6 @@ import type { Game } from '../../language/src/generated/ast.js';
 export function renderHTML(model: Game): string {
     const rows = model.board.rows;
     const cols = model.board.columns;
-    const ctParams = model.compileTime?.parameters ?? [];
-    let boardTypeParam = ctParams.find(p => p.name === 'boardType');
-    let boardType = 'square';
-    if (boardTypeParam && typeof boardTypeParam.value === 'string') {
-        const v = (boardTypeParam.value as string).toLowerCase();
-        if (v === 'hexagon' || v === 'hexagonal') boardType = 'hexagon';
-        else boardType = v;
-    }
 
     let html = `<!DOCTYPE html>
 <html lang="en">
@@ -40,22 +32,6 @@ export function renderHTML(model: Game): string {
             border: 1px solid #333; 
             background: #228B22; 
         }
-        /* Hex board styles */
-        .hex-board { display: inline-block; margin: 2em auto; }
-        .hex-row { display: flex; }
-        .hex-row.offset { margin-left: 26px; }
-        .hex-cell {
-            width: 52px;
-            height: 44px;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            background: #228B22;
-            border: 1px solid #333;
-            clip-path: polygon(25% 6.7%, 75% 6.7%, 100% 50%, 75% 93.3%, 25% 93.3%, 0% 50%);
-            box-sizing: border-box;
-            margin: 2px 2px;
-        }
         .piece { 
             width: 40px; 
             height: 40px; 
@@ -83,37 +59,18 @@ export function renderHTML(model: Game): string {
     <table>`;
 
     // Generate board
-    if (boardType === 'hexagon') {
-        html += `\n    <div class="hex-board">`;
-        for (let r = 1; r <= rows; r++) {
-            const offset = (r % 2) === 0;
-            html += `\n        <div class="hex-row${offset ? ' offset' : ''}">`;
-            for (let c = 1; c <= cols; c++) {
-                const cell = model.initial?.cells.find(cell =>
-                    cell.position.row === r && cell.position.column === c
-                );
-                let content = '';
-                if (cell?.color === 'black') content = '<div class="piece black"></div>';
-                else if (cell?.color === 'white') content = '<div class="piece white"></div>';
-                html += `<div class="hex-cell">${content}</div>`;
-            }
-            html += '</div>';
+    for (let r = 1; r <= rows; r++) {
+        html += '\n        <tr>';
+        for (let c = 1; c <= cols; c++) {
+            const cell = model.initial?.cells.find(cell =>
+                cell.position.row === r && cell.position.column === c
+            );
+            let content = '';
+            if (cell?.color === 'black') content = '<div class="piece black"></div>';
+            else if (cell?.color === 'white') content = '<div class="piece white"></div>';
+            html += `<td>${content}</td>`;
         }
-        html += `\n    </div>`;
-    } else {
-        for (let r = 1; r <= rows; r++) {
-            html += '\n        <tr>';
-            for (let c = 1; c <= cols; c++) {
-                const cell = model.initial?.cells.find(cell =>
-                    cell.position.row === r && cell.position.column === c
-                );
-                let content = '';
-                if (cell?.color === 'black') content = '<div class="piece black"></div>';
-                else if (cell?.color === 'white') content = '<div class="piece white"></div>';
-                html += `<td>${content}</td>`;
-            }
-            html += '</tr>';
-        }
+        html += '</tr>';
     }
 
     html += `
