@@ -1,7 +1,7 @@
 # Game: Othello8x8
 
 > Compile-time:
-  - boardType = hexagon
+  - boardType = circle
   - scoreGoal = max
   - allowDiagonal = true
   - initialPosition = dynamic
