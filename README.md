@@ -41,53 +41,212 @@ L’état et l’objectif varient selon les variantes/contraintes
 
 
 
-### Brouillon de grammaire (Langium)
+### Notre grammaire (Langium)
 
 Fichier .langium
 
 ```langium
 grammar OthelloDsl
 
-Model:
+entry Game:
     'game' name=ID '{'
+        (compileTime=CompileTimeBlock)?
+        (runTime=RunTimeBlock)?
+        (ui=UIBlock)?
         board=Board
-        rules+=Rule*
-        victory=VictoryCondition
-    '}';
+        players=Players
+        initial=Initial
+        position=Position
+        rules=Rules
+    '}'
+;
+
+// ----- COMPILE-TIME -----
+
+CompileTimeBlock:
+    'compile-time' '{'
+        parameters+=CTParameter*
+    '}'
+;
+
+CTParameter:
+    name=ID '=' value=CTValue
+;
+
+CTValue returns string:
+    INT | STRING | BOOLEAN | ID
+;
+
+terminal BOOLEAN: /true|false/;
+
+// ----- RUN-TIME -----
+
+RunTimeBlock:
+    'run-time' '{'
+        parameters+=RTParameter*
+    '}'
+;
+
+RTParameter:
+    name=ID '=' value=RTValue
+;
+
+RTValue returns string:
+    INT | STRING | BOOLEAN
+;
+
+// ----- UI / SKIN -----
+
+UIBlock:
+    'ui' '{'
+        (theme=ThemeBlock)?
+        (layout=LayoutBlock)?
+    '}'
+;
+
+ThemeBlock:
+    'theme' '{'
+        'name' '=' name=STRING
+        ('sprites' '{' sprites+=SpriteDef* '}')?
+    '}'
+;
+
+SpriteDef:
+    name=ID '=' path=STRING
+;
+
+LayoutBlock:
+    'layout' '{'
+        ('grid' '{' rows=INT 'x' columns=INT '}')?
+        ('hands' '{' left=ID? right=ID? '}')?
+        ('scaling' '=' (INT | STRING))?
+    '}'
+;
+
+// ----- EXISTANT -----
 
 Board:
-    'board' sizeX=INT 'x' sizeY=INT shape=('square' | 'hex')?;
+    'board' rows=INT 'x' columns=INT 
+;
 
-Rule:
-    'rule' name=ID '{'
-        'capture' captureType=('sandwich' | 'adjacent') ';'
-        'mandatory' mandatory=BOOLEAN ';'
-    '}';
+Players:
+    'players' '{'
+        black=Player
+        white=Player
+    '}'
+;
 
-VictoryCondition:
-    'victory' condition=('most_tokens' | 'least_tokens' | 'no_moves');
+Player:
+    color=('black' | 'white') name=ID
+;
+
+Initial:
+    'initial' '{'
+        cells+=CellAssign*
+    '}'
+;
+
+CellAssign:
+    'cell' position=Position '=' color=('black' | 'white')
+;
+
+Position:
+    'position' '(' row=INT ',' column=INT ')'
+;
+
+Rules:
+    'rules' '{'
+        move=MoveRule
+        end=EndRule
+        scoring=ScoringRule
+    '}'
+;
+
+MoveRule:
+    'move' '{'
+        ('type' type=('placement' | 'pass'))?
+        'valid' 'if' condition=ConditionExpr
+        'effect' effect=EffectExpr
+    '}'
+;
+
+ConditionExpr:
+    name='captures_in_any_direction' '(' 'r' ',' 'c' ')'
+;
+
+EffectExpr returns string:
+    'flip_captured_pieces' '(' 'r' ',' 'c' ')'
+;
+
+EndRule:
+    'end' 'when' condition=ConditionExpr
+;
+
+ScoringRule returns string:
+    'scoring' 'count_pieces_per_player'
+;
+
+// ----- TERMINALS -----
+
+hidden terminal WS: /\s+/;
+terminal ID: /[_a-zA-Z][\w_]*/;
+terminal INT returns number: /[0-9]+/;
+terminal STRING: /"(\\.|[^"\\])*"|'(\\.|[^'\\])*'/;
+
+hidden terminal ML_COMMENT: /\/\*[\s\S]*?\*\//;
+hidden terminal SL_COMMENT: /\/\/[^\n\r]*/;
 ```
 Exemples de .dsl
 
 ```dsl
-game Othello {
-    board 8x8 square
-    rule main {
-        capture sandwich;
-        mandatory true;
-    }
-    victory most_tokens
-}
-```
+game Othello8x8 {
 
-```dsl
-game MiniOthello {
-    board 4x4 square
-    rule capture {
-        capture sandwich;
-        mandatory false;
+    compile-time {
+        boardType = "square"
+        scoreGoal = "max"
+        allowDiagonal = true
+        initialPosition = "static"
     }
-    victory most_tokens
+
+    run-time {
+        Gtheme = "dark"
+        showHints = true
+        timer = 30
+        allowUndo = false
+        soundEnabled = true
+    }
+
+    ui {
+        theme {
+            name = "dark"
+        }
+    }
+
+    board 8 x 8
+
+    players {
+        black Alice
+        white Bob
+    }
+
+    initial {
+        cell position(4,4) = white
+        cell position(5,5) = white
+        cell position(4,5) = black
+        cell position(5,4) = black
+    }
+
+    position (1,1)
+
+    rules {
+        move {
+            type placement
+            valid if captures_in_any_direction(r,c)
+            effect flip_captured_pieces(r,c)
+        }
+        end when captures_in_any_direction(r,c)
+        scoring count_pieces_per_player
+    }
 }
 ```
 
@@ -96,43 +255,150 @@ game MiniOthello {
 
 ```PlantUML
 @startuml
+title OthelloDsl — diagramme de classes (structure de la grammaire)
+
+' Classes principales
 class Game {
-  + name: String
-  + rules: Rule[*]
-  + board: Board
-  + victory: VictoryCondition
+  + name : ID
+  + compileTime : CompileTimeBlock [0..1]
+  + runTime : RunTimeBlock [0..1]
+  + ui : UIBlock [0..1]
+  + board : Board
+  + players : Players
+  + initial : Initial
+  + position : Position
+  + rules : Rules
+}
+
+class CompileTimeBlock {
+  + parameters : CTParameter [0..*]
+}
+class CTParameter {
+  + name : ID
+  + value : CTValue
+}
+class CTValue {
+  + INT | STRING | BOOLEAN | ID
+}
+
+class RunTimeBlock {
+  + parameters : RTParameter [0..*]
+}
+class RTParameter {
+  + name : ID
+  + value : RTValue
+}
+class RTValue {
+  + INT | STRING | BOOLEAN
+}
+
+class UIBlock {
+  + theme : ThemeBlock [0..1]
+  + layout : LayoutBlock [0..1]
+}
+class ThemeBlock {
+  + name : STRING
+  + sprites : SpriteDef [0..*]
+}
+class SpriteDef {
+  + name : ID
+  + path : STRING
+}
+class LayoutBlock {
+  + gridRows : INT [0..1]
+  + gridCols : INT [0..1]
+  + leftHand : ID [0..1]
+  + rightHand : ID [0..1]
+  + scaling : (INT | STRING) [0..1]
 }
 
 class Board {
-  + width: int
-  + height: int
-  + shape: Shape
+  + rows : INT
+  + columns : INT
 }
 
-class Rule {
-  + name: String
-  + captureType: CaptureType
-  + mandatory: boolean
+class Players {
+  + black : Player
+  + white : Player
+}
+class Player {
+  + color : ('black'|'white')
+  + name : ID
 }
 
-class VictoryCondition {
-  + condition: String
+class Initial {
+  + cells : CellAssign [0..*]
+}
+class CellAssign {
+  + position : Position
+  + color : ('black'|'white')
 }
 
-enum Shape { square, hex }
-enum CaptureType { sandwich, adjacent }
+class Position {
+  + row : INT
+  + column : INT
+}
 
-Game "1" --> "1" Board
-Game "1" --> "*" Rule
-Game "1" --> "1" VictoryCondition
+class Rules {
+  + move : MoveRule
+  + end : EndRule
+  + scoring : ScoringRule
+}
+class MoveRule {
+  + type : ('placement'|'pass') [0..1]
+  + condition : ConditionExpr
+  + effect : EffectExpr
+}
+class ConditionExpr {
+  + name : captures_in_any_direction(r,c)
+}
+class EffectExpr {
+  + name : flip_captured_pieces(r,c)
+}
+class EndRule {
+  + condition : ConditionExpr
+}
+class ScoringRule {
+  + kind : count_pieces_per_player
+}
+
+' Associations / compositions
+Game "1" *-- "0..1" CompileTimeBlock
+Game "1" *-- "0..1" RunTimeBlock
+Game "1" *-- "0..1" UIBlock
+Game "1" *-- "1" Board
+Game "1" *-- "1" Players
+Game "1" *-- "1" Initial
+Game "1" *-- "1" Position
+Game "1" *-- "1" Rules
+
+CompileTimeBlock "1" *-- "*" CTParameter
+CTParameter "1" *-- "1" CTValue
+
+RunTimeBlock "1" *-- "*" RTParameter
+RTParameter "1" *-- "1" RTValue
+
+ThemeBlock "1" *-- "*" SpriteDef
+Initial "1" *-- "*" CellAssign
+CellAssign "1" --> "1" Position
+
+Players "1" *-- "2" Player : roles (black, white)
+
+Rules "1" *-- "1" MoveRule
+Rules "1" *-- "1" EndRule
+Rules "1" *-- "1" ScoringRule
+
+MoveRule "1" --> "1" ConditionExpr
+MoveRule "1" --> "1" EffectExpr
+EndRule "1" --> "1" ConditionExpr
+
+skinparam classAttributeIconSize 0
 @enduml
 ```
 
 Mini-instances:<br>
 1 - Othello (8x8, sandwich capture, most_tokens)<br>
 2 - MiniOthello (4x4, no mandatory capture, most_tokens)
-
-
 
 ### Questions ouvertes
 
@@ -168,7 +434,6 @@ Génération et build du langage
 ```bash
 npm run langium:generate
 npm run build
-npm run langium:watch
 ```
 
 Ces commandes:
@@ -213,7 +478,6 @@ La preview de la variante 1 de notre projet se trouve dans le dossier suivant:
 /lang/othello-langium/examples/variant1/preview
 ```
 
-
 ## TP3
 
 L'objectif du TP3 est de passer de la variante d'un jeu spécifiée dans notre DSL à une interface (pour le moment statique) textuelle out graphique générée automatiquement.
@@ -221,9 +485,6 @@ L'objectif du TP3 est de passer de la variante d'un jeu spécifiée dans notre D
 ### Grammar Langium
 
 Notre grammaire est disponible à deux endroits différents dans notre projet (comporant le même contenu):
-```bash
-/examples/othelloGrammar.langium
-```
 ```bash
 /lang/othello-langium/packages/language/src/othello.langium
 ```
@@ -235,17 +496,20 @@ La partie CLI et les fichiers qui lui sont associés sont situés dans le dossie
 /lang/othello-langium/packages/cli
 ```
 
-De plus, le backend (en html) de la variante 1 de notre projet se situe dans le dossier:
+De plus, les fichiers permettant de générer les rendu HTML et ascii se situe dans le dossier:
 ```bash
-/lang/othello-langium/examples/variant1/preview
+/lang/othello-langium/packages/backends
 ```
+Voici un exemple du rendu HTML généré pour la variante 1:
 
-Les commandes utilisées pour la génération sont les suivantes:
+![Rendu HTML](examples/variant1/preview/preview_html.png)
+
+
+Les commandes utilisées pour la génération des rendus HTMLs et ascii sont les suivantes:
 ```bash
 DSL-Project/lang/othello-langium$ npx tsc (pour compiler les fichiers .ts en .js)
 
-
-DSL-Project/lang/othello-langium$ node packages/cli/bin/cli.js generate ../../examples/variant1/variant1.othello --target=html --out=examples/variant1/preview
+DSL-Project/lang/othello-langium$ npm run test
 ```
 
 ### Tests
