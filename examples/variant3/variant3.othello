@@ -15,6 +15,12 @@ game Othello16x16 {
         soundEnabled = true
     }
 
+    ui {
+        theme {
+            name = "dark"
+        }
+    }
+
     board 16 x 16
     
     players {

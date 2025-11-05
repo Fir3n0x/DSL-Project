@@ -5,6 +5,16 @@ export function renderHTML(model: Game): string {
     const rows = model.board.rows;
     const cols = model.board.columns;
 
+    // console.log(`>>> Theme for ${model.name}:`, model.ui?.theme?.name, model.runTime?.parameters);
+
+    // Déterminer le thème initial depuis le DSL
+    const uiTheme = model.ui?.theme?.name?.replace(/['"]/g, '');
+    const runtimeThemeParam = model.runTime?.parameters.find(p => p.name === 'Gtheme');
+    const runtimeTheme = runtimeThemeParam ? String(runtimeThemeParam.value).replace(/['"]/g, '') : undefined;
+
+    const initialTheme = uiTheme || runtimeTheme || 'light';
+
+
     let html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,11 +23,19 @@ export function renderHTML(model: Game): string {
     <style>
         body { 
             font-family: Arial, sans-serif; 
-            background: #f4f4f4; 
             text-align: center; 
             padding: 2em; 
+            transition: background 0.3s, color 0.3s;
         }
-        h1 { color: #333; }
+        body.light {
+            background: #f4f4f4;
+            color: #333;
+        }
+        body.dark {
+            background: #121212;
+            color: #f4f4f4;
+        }
+        h1 { margin-bottom: 0.5em; }
         .info { margin: 1em 0; font-size: 1.1em; }
         table { 
             margin: 2em auto; 
@@ -30,8 +48,9 @@ export function renderHTML(model: Game): string {
             text-align: center; 
             vertical-align: middle; 
             border: 1px solid #333; 
-            background: #228B22; 
         }
+        body.light td { background: #228B22; } /* vert clair */
+        body.dark td { background: #145214; }  /* vert foncé */
         .piece { 
             width: 40px; 
             height: 40px; 
@@ -43,22 +62,33 @@ export function renderHTML(model: Game): string {
         .rules { 
             margin-top: 2em; 
             padding: 1em; 
-            background: white; 
+            background: inherit; 
             border-radius: 8px;
             max-width: 600px;
             margin-left: auto;
             margin-right: auto;
+            border: 1px solid currentColor;
+        }
+        .toggle-btn {
+            padding: 0.5em 1em;
+            margin-top: 1em;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            background: #666;
+            color: #fff;
         }
     </style>
 </head>
-<body>
+<body class="${initialTheme}">
     <h1>${model.name}</h1>
     <div class="info">
         <b>${model.players.black.name}</b> (⚫) vs <b>${model.players.white.name}</b> (⚪)
     </div>
+    <button class="toggle-btn" onclick="toggleTheme()">Switch Theme</button>
     <table>`;
 
-    // Generate board
+    // Génération du plateau
     for (let r = 1; r <= rows; r++) {
         html += '\n        <tr>';
         for (let c = 1; c <= cols; c++) {
@@ -80,6 +110,13 @@ export function renderHTML(model: Game): string {
         <p><b>Move type:</b> ${model.rules.move?.type ?? 'placement'}</p>
         <p><b>Scoring:</b> count pieces per player</p>
     </div>
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            body.classList.toggle('dark');
+            body.classList.toggle('light');
+        }
+    </script>
 </body>
 </html>`;
 

@@ -6,11 +6,19 @@
     <style>
         body { 
             font-family: Arial, sans-serif; 
-            background: #f4f4f4; 
             text-align: center; 
             padding: 2em; 
+            transition: background 0.3s, color 0.3s;
         }
-        h1 { color: #333; }
+        body.light {
+            background: #f4f4f4;
+            color: #333;
+        }
+        body.dark {
+            background: #121212;
+            color: #f4f4f4;
+        }
+        h1 { margin-bottom: 0.5em; }
         .info { margin: 1em 0; font-size: 1.1em; }
         table { 
             margin: 2em auto; 
@@ -23,8 +31,9 @@
             text-align: center; 
             vertical-align: middle; 
             border: 1px solid #333; 
-            background: #228B22; 
         }
+        body.light td { background: #228B22; } /* vert clair */
+        body.dark td { background: #145214; }  /* vert foncé */
         .piece { 
             width: 40px; 
             height: 40px; 
@@ -36,19 +45,30 @@
         .rules { 
             margin-top: 2em; 
             padding: 1em; 
-            background: white; 
+            background: inherit; 
             border-radius: 8px;
             max-width: 600px;
             margin-left: auto;
             margin-right: auto;
+            border: 1px solid currentColor;
+        }
+        .toggle-btn {
+            padding: 0.5em 1em;
+            margin-top: 1em;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            background: #666;
+            color: #fff;
         }
     </style>
 </head>
-<body>
+<body class="dark">
     <h1>Othello16x16</h1>
     <div class="info">
         <b>Alice</b> (⚫) vs <b>Bob</b> (⚪)
     </div>
+    <button class="toggle-btn" onclick="toggleTheme()">Switch Theme</button>
     <table>
         <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
         <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
@@ -72,5 +92,12 @@
         <p><b>Move type:</b> placement</p>
         <p><b>Scoring:</b> count pieces per player</p>
     </div>
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            body.classList.toggle('dark');
+            body.classList.toggle('light');
+        }
+    </script>
 </body>
 </html>

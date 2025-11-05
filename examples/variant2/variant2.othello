@@ -15,6 +15,12 @@ game Othello8x8 {
         soundEnabled = true
     }
 
+    ui {
+        theme {
+            name = "light"
+        }
+    }
+
     board 8 x 8
 
     players {
