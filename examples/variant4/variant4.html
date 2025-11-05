@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -34,6 +35,10 @@
         }
         body.light td { background: #228B22; } /* vert clair */
         body.dark td { background: #145214; }  /* vert foncé */
+        .hidden {
+            background: transparent !important;
+            border: none !important;
+        }
         .piece { 
             width: 40px; 
             height: 40px; 
@@ -70,22 +75,22 @@
     </div>
     <button class="toggle-btn" onclick="toggleTheme()">Switch Theme</button>
     <table>
-        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><div class="piece white"></div></td><td><div class="piece black"></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><div class="piece black"></div></td><td><div class="piece white"></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td></tr>
+        <tr><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td></tr>
+        <tr><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td></tr>
+        <tr><td class="hidden"></td><td class="hidden"></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class="hidden"></td><td class="hidden"></td></tr>
+        <tr><td class="hidden"></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class="hidden"></td></tr>
+        <tr><td class="hidden"></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class="hidden"></td></tr>
+        <tr><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td></tr>
+        <tr><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""><div class="piece white"></div></td><td class=""><div class="piece black"></div></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td></tr>
+        <tr><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""><div class="piece black"></div></td><td class=""><div class="piece white"></div></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td></tr>
+        <tr><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td></tr>
+        <tr><td class="hidden"></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class="hidden"></td></tr>
+        <tr><td class="hidden"></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class="hidden"></td></tr>
+        <tr><td class="hidden"></td><td class="hidden"></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class="hidden"></td><td class="hidden"></td></tr>
+        <tr><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td></tr>
+        <tr><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td></tr>
+        <tr><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td><td class=""></td><td class=""></td><td class=""></td><td class=""></td><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td></tr>
     </table>
     <div class="rules">
         <h3>Game Rules</h3>

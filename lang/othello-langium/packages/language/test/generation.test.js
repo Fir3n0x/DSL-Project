@@ -20,6 +20,7 @@ describe('Generation Tests', () => {
             expect(content).toContain('<h1>');
             expect(content).toContain('<table>');
             expect(content).toContain('<div class="rules">');
+            expect(content).toMatch(/class="(dark|light)"/);
         });
         test(`should generate ASCII for ${variant}`, () => {
             // Exécute la commande de génération

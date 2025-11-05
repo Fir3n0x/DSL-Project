@@ -28,9 +28,9 @@ export function generateOutput(model: Game, source: string, options: GenerateOpt
     const destination = resolveOutPath(source, options.outPath, options.target);
     const dir = path.dirname(destination);
     
-    if (!fs.existsSync(dir)) {
+    //if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
-    }
+    //}
 
     fs.writeFileSync(destination, content, 'utf-8');
     return { filePath: destination };

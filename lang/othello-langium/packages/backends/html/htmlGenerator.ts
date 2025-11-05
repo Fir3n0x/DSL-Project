@@ -1,21 +1,25 @@
 import type { Game } from '../../language/src/generated/ast.js';
 
-
 export function renderHTML(model: Game): string {
     const rows = model.board.rows;
     const cols = model.board.columns;
 
-    // console.log(`>>> Theme for ${model.name}:`, model.ui?.theme?.name, model.runTime?.parameters);
-
-    // Déterminer le thème initial depuis le DSL
+    // --- Thème ---
     const uiTheme = model.ui?.theme?.name?.replace(/['"]/g, '');
     const runtimeThemeParam = model.runTime?.parameters.find(p => p.name === 'Gtheme');
     const runtimeTheme = runtimeThemeParam ? String(runtimeThemeParam.value).replace(/['"]/g, '') : undefined;
-
     const initialTheme = uiTheme || runtimeTheme || 'light';
 
+    // --- Type de plateau (square ou circle) ---
+    const boardTypeParam = model.compileTime?.parameters.find(p => p.name === 'boardType');
+    const boardType = boardTypeParam ? String(boardTypeParam.value).replace(/['"]/g, '') : 'square';
 
-    let html = `<!DOCTYPE html>
+    // Rayon pour la forme circulaire
+    const radius = Math.min(rows, cols) / 2;
+
+    // --- HTML principal ---
+    let html = `
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -51,6 +55,10 @@ export function renderHTML(model: Game): string {
         }
         body.light td { background: #228B22; } /* vert clair */
         body.dark td { background: #145214; }  /* vert foncé */
+        .hidden {
+            background: transparent !important;
+            border: none !important;
+        }
         .piece { 
             width: 40px; 
             height: 40px; 
@@ -88,21 +96,33 @@ export function renderHTML(model: Game): string {
     <button class="toggle-btn" onclick="toggleTheme()">Switch Theme</button>
     <table>`;
 
-    // Génération du plateau
+    // --- Génération de la grille ---
     for (let r = 1; r <= rows; r++) {
         html += '\n        <tr>';
         for (let c = 1; c <= cols; c++) {
+            // Calcul de la distance pour le “cercle Minecraft”
+            const dx = c - (cols + 1) / 2;
+            const dy = r - (rows + 1) / 2;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            const isInsideCircle =
+                boardType !== 'circle' ||
+                distance <= radius - 0.3;
+
             const cell = model.initial?.cells.find(cell =>
                 cell.position.row === r && cell.position.column === c
             );
+
             let content = '';
             if (cell?.color === 'black') content = '<div class="piece black"></div>';
             else if (cell?.color === 'white') content = '<div class="piece white"></div>';
-            html += `<td>${content}</td>`;
+
+            html += `<td class="${isInsideCircle ? '' : 'hidden'}">${content}</td>`;
         }
         html += '</tr>';
     }
 
+    // --- Fin du HTML ---
     html += `
     </table>
     <div class="rules">
