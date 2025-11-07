@@ -1,12 +1,12 @@
 # server.py
-from flask import Flask, request, jsonify, render_html
+from flask import Flask, request, jsonify, render_template
 from ai import get_best_move
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder="../../../../../examples/variant1")
 
 @app.route("/", methods=["GET"])
 def home():
-    return render_html("")
+    return render_template("variant1.html")
 
 @app.route("/move", methods=["POST"])
 def move():
