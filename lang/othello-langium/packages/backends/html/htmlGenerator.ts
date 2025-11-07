@@ -95,6 +95,7 @@ export function renderHTML(model: Game): string {
         <b>${model.players.black.name}</b> (⚫) vs <b>${model.players.white.name}</b> (⚪)
     </div>
     <button class="toggle-btn" onclick="toggleTheme()">Switch Theme</button>
+    <button class="toggle-btn" onclick="sendStateToAI()">Envoyer état au serveur IA</button>
     <table>`;
 
     // --- Génération de la grille ---
@@ -209,6 +210,48 @@ html += `
                 }
             }
         });
+        function getBoardState() {
+            const table = document.querySelector('table');
+            if (!table) return [];
+            const rows = table.rows.length;
+            const cols = table.rows[0].cells.length;
+            const state = [];
+            for (let r = 0; r < rows; r++) {
+            const row = [];
+            for (let c = 0; c < cols; c++) {
+                const cell = table.rows[r].cells[c];
+                if (!cell || cell.classList.contains('hidden')) {
+                    // Ne rien ajouter
+                    continue;
+                } else {
+                    const piece = cell.querySelector('.piece');
+                    if (!piece) row.push(null);
+                    else if (piece.classList.contains('black')) row.push('black');
+                    else if (piece.classList.contains('white')) row.push('white');
+                    else row.push(null);
+                }
+            }
+            state.push(row);
+        }
+            return state;
+        }
+        function sendStateToAI() {
+            const board = getBoardState();
+            const payload = {
+                board: board,
+                player: currentPlayer
+            };
+            fetch('http://localhost:5000', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                // Traiter la réponse de l’IA ici
+                console.log('Réponse IA:', data);
+            });
+        }       
     </script>
 </body>
 </html>`;
