@@ -1,12 +1,20 @@
 # server.py
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, redirect, url_for
 from ai import get_best_move
 
-app = Flask(__name__, template_folder="../../../../../examples/variant1")
+# point template_folder to the parent examples directory so subfolders for variants are accessible
+app = Flask(__name__, template_folder="../../../../../examples")
 
 @app.route("/", methods=["GET"])
 def home():
-    return render_template("variant1.html")
+    # render a simple index page with links to each variant
+    return render_template("index.html")
+
+@app.route("/game/<int:variant>", methods=["GET"])
+def game(variant):
+    # render the variant page located in examples/variantX/variantX.html
+    template_path = f"variant{variant}/variant{variant}.html"
+    return render_template(template_path)
 
 @app.route("/move", methods=["POST"])
 def move():

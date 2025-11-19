@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Othello - Select Variant</title>
+  <style>
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-align: center; 
+      padding: 2em; 
+      transition: background 0.3s, color 0.3s;
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    body.light {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+    }
+    body.dark {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: #f4f4f4;
+    }
+    h1 { 
+      margin-bottom: 0.5em;
+      font-size: 3em;
+      font-weight: 700;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    .subtitle {
+      font-size: 1.3em;
+      font-weight: 500;
+      margin-bottom: 2em;
+      opacity: 0.95;
+    }
+    .variants-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2em;
+      max-width: 1200px;
+      margin: 2em auto;
+    }
+    .variant-card {
+      padding: 2em;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(15px);
+      border: 2px solid rgba(255,215,0,0.3);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .variant-card:hover {
+      transform: translateY(-8px);
+      background: rgba(255,255,255,0.25);
+      border: 2px solid rgba(255,215,0,0.6);
+      box-shadow: 0 12px 40px rgba(255,215,0,0.3);
+    }
+    .variant-card h2 {
+      margin: 0 0 1em 0;
+      font-size: 1.8em;
+      font-weight: 700;
+      color: #ffd700;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    .variant-card p {
+      margin: 0 0 1.5em 0;
+      font-size: 1.1em;
+      opacity: 0.9;
+    }
+    .variant-card a {
+      padding: 0.8em 2em;
+      background: linear-gradient(135deg, #ff9800, #ff5722);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 25px;
+      font-weight: 600;
+      font-size: 1.1em;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
+      display: inline-block;
+    }
+    .variant-card a:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 16px rgba(255, 152, 0, 0.6);
+    }
+    .theme-toggle {
+      position: absolute;
+      top: 2em;
+      right: 2em;
+      padding: 0.7em 1.5em;
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(10px);
+      border: none;
+      border-radius: 25px;
+      color: #fff;
+      font-weight: 600;
+      font-size: 1em;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .theme-toggle:hover {
+      background: rgba(255,255,255,0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    }
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2em;
+      }
+      .variants-container {
+        grid-template-columns: 1fr;
+        gap: 1.5em;
+      }
+      .theme-toggle {
+        position: static;
+        margin-bottom: 2em;
+      }
+    }
+  </style>
+</head>
+
+<body class="light">
+  <button class="theme-toggle" onclick="toggleTheme()">🌓 Changer de thème</button>
+  
+  <h1>🎮 Othello</h1>
+  <p class="subtitle">Sélectionnez une variante pour commencer</p>
+  
+  <div class="variants-container">
+    <div class="variant-card">
+      <h2>Variante 1</h2>
+      <p>Jouez à la variante classique</p>
+      <a href="/game/1">Jouer →</a>
+    </div>
+    
+    <div class="variant-card">
+      <h2>Variante 2</h2>
+      <p>Découvrez les nouvelles règles</p>
+      <a href="/game/2">Jouer →</a>
+    </div>
+    
+    <div class="variant-card">
+      <h2>Variante 3</h2>
+      <p>Défiez-vous avec cette version</p>
+      <a href="/game/3">Jouer →</a>
+    </div>
+    
+    <div class="variant-card">
+      <h2>Variante 4</h2>
+      <p>Une expérience unique</p>
+      <a href="/game/4">Jouer →</a>
+    </div>
+    
+    <div class="variant-card">
+      <h2>Variante 5</h2>
+      <p>Le défi ultime vous attend</p>
+      <a href="/game/5">Jouer →</a>
+    </div>
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const body = document.body;
+      body.classList.toggle('dark');
+      body.classList.toggle('light');
+    }
+  </script>
+</body>
+</html>
