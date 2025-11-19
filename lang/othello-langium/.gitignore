@@ -9,5 +9,7 @@ generated/
 syntaxes/
 *.tsbuildinfo
 *.vsix
-packages/backends/server/.venv/
-packages/backends/server/__pycache__
+.venv/
+.env
+__pycache__/
+data/
