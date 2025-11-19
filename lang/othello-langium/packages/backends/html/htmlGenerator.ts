@@ -26,159 +26,326 @@ export function renderHTML(model: Game): string {
     <title>${model.name}</title>
     <style>
         body { 
-            font-family: Arial, sans-serif; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             text-align: center; 
             padding: 2em; 
             transition: background 0.3s, color 0.3s;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         body.light {
-            background: #f4f4f4;
-            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
         }
         body.dark {
-            background: #121212;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             color: #f4f4f4;
         }
-        h1 { margin-bottom: 0.5em; }
-        .info { margin: 1em 0; font-size: 1.1em; }
+        h1 { 
+            margin-bottom: 0.5em;
+            font-size: 3em;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .info { 
+            margin: 1em 0; 
+            font-size: 1.3em;
+            font-weight: 500;
+        }
+        .game-container {
+            display: flex;
+            gap: 3em;
+            align-items: flex-start;
+            justify-content: center;
+            max-width: 1600px;
+            margin: 2em auto;
+        }
+        .video-section {
+            width: 280px;
+            position: sticky;
+            top: 2em;
+            display: none;
+        }
+        .video-section.show {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        .video-container {
+            width: 280px;
+            height: 500px;
+            border-radius: 20px;
+            overflow: hidden;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            border: 3px solid rgba(255,215,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .video-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .video-title {
+            text-align: center;
+            margin-top: 1em;
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .board-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
         table { 
-            margin: 2em auto; 
+            margin: 0; 
             border-collapse: collapse; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            border-radius: 12px;
+            overflow: hidden;
         }
         td { 
-            width: 50px; 
-            height: 50px; 
+            width: 60px; 
+            height: 60px; 
             text-align: center; 
             vertical-align: middle; 
-            border: 1px solid #333; 
+            border: 2px solid rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: background 0.2s;
+            position: relative;
         }
-        body.light td { background: #228B22; } /* vert clair */
-        body.dark td { background: #145214; }  /* vert foncé */
+        body.light td { background: linear-gradient(145deg, #2ecc71, #27ae60); }
+        body.dark td { background: linear-gradient(145deg, #1e5128, #145214); }
+        td:hover:not(.hidden) { 
+            filter: brightness(1.1);
+        }
         .hidden {
             background: transparent !important;
             border: none !important;
+            cursor: default !important;
         }
         .piece { 
-            width: 40px; 
-            height: 40px; 
+            width: 45px; 
+            height: 45px; 
             border-radius: 50%; 
-            margin: auto; 
+            margin: auto;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+            transition: transform 0.3s;
+            position: relative;
+            transform-style: preserve-3d;
         }
-        .black { background: #000; }
-        .white { background: #fff; border: 2px solid #000; }
+        .piece:hover {
+            transform: scale(1.1);
+        }
+        .piece.flipping {
+            animation: flip 0.6s ease-in-out;
+        }
+        @keyframes flip {
+            0% { transform: rotateY(0deg); }
+            50% { transform: rotateY(90deg); }
+            100% { transform: rotateY(180deg); }
+        }
+        .black { 
+            background: radial-gradient(circle at 30% 30%, #333, #000);
+        }
+        .white { 
+            background: radial-gradient(circle at 30% 30%, #fff, #ddd);
+            border: 2px solid #000; 
+        }
         .rules { 
             margin-top: 2em; 
-            padding: 1em; 
-            background: inherit; 
-            border-radius: 8px;
+            padding: 1.5em; 
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
             max-width: 600px;
             margin-left: auto;
             margin-right: auto;
-            border: 1px solid currentColor;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
         }
         .toggle-btn {
-            padding: 0.5em 1em;
-            margin-top: 1em;
+            padding: 0.7em 1.5em;
+            margin: 0.5em;
             cursor: pointer;
             border: none;
-            border-radius: 4px;
-            background: #666;
+            border-radius: 25px;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
             color: #fff;
+            font-weight: 600;
+            font-size: 1em;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .toggle-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
         }
         .game-info {
-            margin: 2em auto;
-            padding: 1.5em;
-            max-width: 600px;
-            border: 2px solid currentColor;
-            border-radius: 8px;
-            background: inherit;
+            margin: 0;
+            padding: 2em;
+            width: 350px;
+            border: none;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            position: sticky;
+            top: 2em;
         }
         .game-info h3 {
             margin-top: 0;
+            font-size: 1.8em;
+            font-weight: 700;
         }
         .info-row {
             display: flex;
             justify-content: space-between;
-            margin: 0.5em 0;
-            padding: 0.5em;
-            border-radius: 4px;
-        }
-        body.light .info-row {
-            background: rgba(0,0,0,0.05);
-        }
-        body.dark .info-row {
-            background: rgba(255,255,255,0.05);
+            margin: 0.8em 0;
+            padding: 0.8em 1.2em;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.1);
+            font-size: 1.1em;
         }
         .current-turn {
             font-weight: bold;
-            font-size: 1.2em;
-            padding: 0.5em;
-            border-radius: 4px;
-        }
-        body.light .current-turn {
-            background: rgba(34, 139, 34, 0.2);
-        }
-        body.dark .current-turn {
-            background: rgba(34, 139, 34, 0.3);
+            font-size: 1.4em;
+            padding: 1em;
+            border-radius: 12px;
+            background: rgba(46, 204, 113, 0.3);
+            margin-bottom: 1em;
         }
         .last-move {
             font-style: italic;
-            color: #666;
-        }
-        body.dark .last-move {
-            color: #aaa;
+            opacity: 0.9;
         }
         .pass-turn-btn {
-            padding: 0.8em 1.5em;
-            margin: 1em;
+            padding: 1em 2em;
+            margin: 1em 0;
             cursor: pointer;
-            border: 2px solid #ff9800;
-            border-radius: 6px;
-            background: #ff9800;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #ff9800, #ff5722);
             color: #fff;
             font-weight: bold;
-            font-size: 1.1em;
+            font-size: 1.2em;
             display: none;
+            box-shadow: 0 6px 16px rgba(255, 152, 0, 0.4);
+            transition: all 0.3s;
+            width: 100%;
         }
         .pass-turn-btn:hover {
-            background: #e68900;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 152, 0, 0.6);
         }
         .game-over {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.95);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 3em;
-            border-radius: 12px;
+            padding: 3em 4em;
+            border-radius: 24px;
             text-align: center;
-            z-index: 1000;
+            z-index: 1001;
             display: none;
-            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+            box-shadow: 0 0 50px rgba(255, 215, 0, 0.6);
+            border: 3px solid rgba(255, 215, 0, 0.5);
+            backdrop-filter: blur(20px);
         }
         .game-over h2 {
-            font-size: 2.5em;
-            margin: 0.5em 0;
+            font-size: 3em;
+            margin: 0.3em 0;
             color: #ffd700;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.4);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
         .game-over .final-score {
-            font-size: 1.5em;
-            margin: 1em 0;
+            font-size: 1.6em;
+            margin: 1.5em 0;
+            line-height: 1.8;
+        }
+        .game-over .toggle-btn {
+            margin-top: 1em;
+            background: rgba(255,255,255,0.3);
+            font-size: 1.1em;
         }
         .confetti {
             position: fixed;
-            width: 10px;
-            height: 10px;
-            background: #f0f;
-            position: absolute;
-            animation: confetti-fall 3s linear infinite;
+            width: 12px;
+            height: 12px;
+            z-index: 1000;
+            pointer-events: none;
         }
         @keyframes confetti-fall {
-            to {
-                transform: translateY(100vh) rotate(360deg);
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
                 opacity: 0;
+            }
+        }
+        input[type="radio"] {
+            margin: 0 0.5em;
+            cursor: pointer;
+            transform: scale(1.3);
+        }
+        label {
+            margin: 0 1em;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        label:hover {
+            transform: scale(1.05);
+        }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1em;
+            margin-top: 1em;
+        }
+        @media (max-width: 1200px) {
+            .game-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .video-section {
+                width: 100%;
+                max-width: 280px;
+                position: static;
+            }
+            .game-info {
+                width: 100%;
+                max-width: 600px;
+                position: static;
             }
         }
     </style>
@@ -186,52 +353,34 @@ export function renderHTML(model: Game): string {
 
 <body class="${initialTheme}">
     <h1>${model.name}</h1>
-    <div class="info">
-        <b>${model.players.black.name}</b> (⚫) vs <b>${model.players.white.name}</b> (⚪)
-    </div>
-    <button class="toggle-btn" onclick="toggleTheme()">Switch Theme</button>
-    <button class="toggle-btn" onclick="sendStateToAI()">Envoyer état au serveur IA</button>
+    <p class="info">Jouez à l'Othello ! Retournez les pièces adverses.</p>
+    
     <div style="margin: 1em 0;">
-        <label><input type="radio" name="gameMode" value="human" checked> Humain vs Humain</label>
-        <label><input type="radio" name="gameMode" value="ai"> Humain vs IA</label>
+        <button class="toggle-btn" onclick="toggleTheme()">🌓 Changer de thème</button>
+        <button class="toggle-btn" onclick="sendStateToAI()">🤖 Envoyer état au serveur IA</button>
     </div>
     
-    <button class="pass-turn-btn" id="passTurnBtn" onclick="passTurn()">⏭️ Passer mon tour (aucun coup valide)</button>
+    <div style="margin: 1em 0;">
+        <label><input type="radio" name="gameMode" value="human" checked> 👥 Humain vs Humain</label>
+        <label><input type="radio" name="gameMode" value="ai"> 🤖 Humain vs IA</label>
+    </div>
     
     <div class="game-over" id="gameOver">
         <h2>🎉 Partie Terminée ! 🎉</h2>
         <div class="final-score" id="finalScore"></div>
-        <button class="toggle-btn" onclick="location.reload()">Nouvelle Partie</button>
+        <button class="toggle-btn" onclick="location.reload()">🔄 Nouvelle Partie</button>
     </div>
     
-    <div class="game-info">
-        <h3>📊 État de la Partie</h3>
-        <div class="current-turn" id="currentTurn">
-            Tour actuel : <span id="turnPlayer">⚫ ${model.players.black.name}</span>
+    <div class="game-container">
+        <div class="video-section" id="videoSection">
+            <div class="video-container" id="videoContainer">
+                <!-- La vidéo sera chargée dynamiquement -->
+            </div>
+            <div class="video-title">🎉 Victoire ! 🎉</div>
         </div>
-        <div class="info-row">
-            <span><b>⚫ ${model.players.black.name}</b></span>
-            <span id="blackScore">2</span>
-        </div>
-        <div class="info-row">
-            <span><b>⚪ ${model.players.white.name}</b></span>
-            <span id="whiteScore">2</span>
-        </div>
-        <div class="info-row">
-            <span><b>Dernier coup :</b></span>
-            <span class="last-move" id="lastMove">-</span>
-        </div>
-        <div class="info-row">
-            <span><b>Nombre de coups :</b></span>
-            <span id="moveCount">0</span>
-        </div>
-        <div class="info-row">
-            <span><b>Mode de jeu :</b></span>
-            <span id="gameModeDisplay">Humain vs Humain</span>
-        </div>
-    </div>
-    
-    <table>`;
+        
+        <div class="board-section">
+            <table>`;
 
     // --- Génération de la grille ---
     for (let r = 1; r <= rows; r++) {
@@ -260,8 +409,40 @@ export function renderHTML(model: Game): string {
     }
 
     // --- Fin du HTML ---
-html += `
-    </table>
+html += `</table>
+        </div>
+        
+        <div class="game-info">
+            <h3>📊 État de la Partie</h3>
+            <div class="current-turn" id="currentTurn">
+                Tour actuel : <span id="turnPlayer">⚫ ${model.players.black.name}</span>
+            </div>
+            <div class="info-row">
+                <span><b>⚫ ${model.players.black.name}</b></span>
+                <span id="blackScore">2</span>
+            </div>
+            <div class="info-row">
+                <span><b>⚪ ${model.players.white.name}</b></span>
+                <span id="whiteScore">2</span>
+            </div>
+            <div class="info-row">
+                <span><b>Dernier coup :</b></span>
+                <span class="last-move" id="lastMove">-</span>
+            </div>
+            <div class="info-row">
+                <span><b>Nombre de coups :</b></span>
+                <span id="moveCount">0</span>
+            </div>
+            <div class="info-row">
+                <span><b>Mode de jeu :</b></span>
+                <span id="gameModeDisplay">👥 Humain vs Humain</span>
+            </div>
+            <div class="controls">
+                <button class="pass-turn-btn" id="passTurnBtn" onclick="passTurn()">⏭️ Passer mon tour</button>
+            </div>
+        </div>
+    </div>
+    
     <div class="rules">
         <h3>Game Rules</h3>
         <p><b>Move type:</b> ${model.rules.move?.type ?? 'placement'}</p>
@@ -286,6 +467,26 @@ html += `
         
         function getOpponent(player) {
             return player === 'black' ? 'white' : 'black';
+        }
+        
+        function flipPieceWithAnimation(piece, newColor) {
+            // Empêcher les animations multiples
+            if (piece.classList.contains('flipping')) {
+                return;
+            }
+            
+            piece.classList.add('flipping');
+            
+            // Changer la couleur à mi-animation (quand la pièce est de profil)
+            setTimeout(() => {
+                piece.classList.remove('black', 'white');
+                piece.classList.add(newColor);
+            }, 300);
+            
+            // Retirer la classe d'animation après
+            setTimeout(() => {
+                piece.classList.remove('flipping');
+            }, 600);
         }
         
         function updateGameInfo() {
@@ -323,7 +524,7 @@ html += `
             document.getElementById('moveCount').textContent = moveCount;
             
             // Mise à jour du mode de jeu
-            const mode = getGameMode() === 'ai' ? 'Humain vs IA' : 'Humain vs Humain';
+            const mode = getGameMode() === 'ai' ? '🤖 Humain vs IA' : '👥 Humain vs Humain';
             document.getElementById('gameModeDisplay').textContent = mode;
             
             // Vérifier si le joueur actuel peut jouer
@@ -468,24 +669,54 @@ html += `
             
             // Lancer les confettis
             createConfetti();
+            
+            // Afficher la vidéo de victoire
+            showVictoryVideo();
+        }
+        
+        function showVictoryVideo() {
+            const videoSection = document.getElementById('videoSection');
+            const videoContainer = document.getElementById('videoContainer');
+            
+            // Charger la vidéo YouTube
+            videoContainer.innerHTML = \`
+                <iframe 
+                    width="280" 
+                    height="500" 
+                    src="https://www.youtube.com/embed/OqPxaKs8xrk?autoplay=1&mute=1&loop=1&playlist=OqPxaKs8xrk" 
+                    frameborder="0" 
+                    allow="autoplay; encrypted-media" 
+                    allowfullscreen>
+                </iframe>
+            \`;
+            
+            // Afficher la section vidéo avec animation
+            videoSection.classList.add('show');
         }
         
         function createConfetti() {
             const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffd700', '#ff69b4'];
-            const confettiCount = 100;
+            const confettiCount = 150;
             
             for (let i = 0; i < confettiCount; i++) {
                 setTimeout(() => {
                     const confetti = document.createElement('div');
                     confetti.className = 'confetti';
                     confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.top = '-20px';
                     confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                    confetti.style.animationDelay = Math.random() * 3 + 's';
-                    confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    confetti.style.animation = \`confetti-fall \${(Math.random() * 2 + 3)}s linear forwards\`;
+                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                    
+                    // Formes variées
+                    if (Math.random() > 0.5) {
+                        confetti.style.borderRadius = '50%';
+                    }
+                    
                     document.body.appendChild(confetti);
                     
-                    setTimeout(() => confetti.remove(), 5000);
-                }, i * 30);
+                    setTimeout(() => confetti.remove(), 6000);
+                }, i * 20);
             }
         }
         
@@ -541,16 +772,23 @@ html += `
                 return false;
             }
             function flipPieces(r, c, player) {
+                const directions = [
+                    [0,1], [1,0], [0,-1], [-1,0],
+                    [1,1], [1,-1], [-1,1], [-1,-1]
+                ];
                 for (const [dr, dc] of directions) {
                     let i = r + dr, j = c + dc, path = [];
-                    while (getCell(i, j) && getPiece(getCell(i, j)) === getOpponent(player)) {
+                    while (table.rows[i]?.cells[j] && getPiece(table.rows[i].cells[j]) === getOpponent(player)) {
                         path.push([i, j]);
                         i += dr; j += dc;
                     }
-                    if (path.length && getCell(i, j) && getPiece(getCell(i, j)) === player) {
+                    if (path.length && table.rows[i]?.cells[j] && getPiece(table.rows[i].cells[j]) === player) {
                         for (const [x, y] of path) {
-                            const cell = getCell(x, y);
-                            cell.querySelector('.piece').className = 'piece ' + player;
+                            const cell = table.rows[x].cells[y];
+                            const piece = cell.querySelector('.piece');
+                            if (piece) {
+                                flipPieceWithAnimation(piece, player);
+                            }
                         }
                     }
                 }
@@ -675,6 +913,7 @@ html += `
                 return false;
             }
             
+            // Ajouter l'animation de retournement
             function flipPieces(r, c, player) {
                 const directions = [
                     [0,1], [1,0], [0,-1], [-1,0],
@@ -689,7 +928,20 @@ html += `
                     if (path.length && table.rows[i]?.cells[j] && getPiece(table.rows[i].cells[j]) === player) {
                         for (const [x, y] of path) {
                             const cell = table.rows[x].cells[y];
-                            cell.querySelector('.piece').className = 'piece ' + player;
+                            const piece = cell.querySelector('.piece');
+                            
+                            // Ajouter l'animation de retournement
+                            piece.classList.add('flipping');
+                            
+                            // Changer la couleur à mi-animation
+                            setTimeout(() => {
+                                piece.className = 'piece flipping ' + player;
+                            }, 300);
+                            
+                            // Retirer la classe d'animation après
+                            setTimeout(() => {
+                                piece.classList.remove('flipping');
+                            }, 600);
                         }
                     }
                 }
