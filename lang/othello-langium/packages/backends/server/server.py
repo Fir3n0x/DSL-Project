@@ -21,8 +21,9 @@ def move():
     data = request.json
     board = data.get("board")
     player = data.get("player")
+    depth = data.get("depth", 3)  # Profondeur par défaut à 3 si non fournie
     
-    best_move = get_best_move(board, player)
+    best_move = get_best_move(board, player, depth)
     return jsonify({"move": best_move})
 
 if __name__ == "__main__":

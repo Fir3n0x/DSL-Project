@@ -8,20 +8,33 @@ DIRECTIONS = [(-1, -1), (-1, 0), (-1, 1),
 def get_valid_moves(board, player):
     opponent = "white" if player == "black" else "black"
     valid_moves = []
+    
+    rows = len(board)
+    cols = len(board[0]) if rows > 0 else 0
 
-    for r in range(8):
-        for c in range(8):
+    for r in range(rows):
+        for c in range(cols):
+            # Ignorer les cases qui ne sont pas vides (mur, pièce existante, etc.)
+            if board[r][c] is not None and board[r][c] != "wall":
+                continue
+            # Ignorer les murs
+            if board[r][c] == "wall":
+                continue
+            # La case doit être None (vide)
             if board[r][c] is not None:
                 continue
+                
             flips = []
             for dr, dc in DIRECTIONS:
                 rr, cc = r + dr, c + dc
                 line = []
-                while 0 <= rr < 8 and 0 <= cc < 8 and board[rr][cc] == opponent:
+                # Parcourir dans la direction et collecter les pièces adverses
+                while 0 <= rr < rows and 0 <= cc < cols and board[rr][cc] == opponent:
                     line.append((rr, cc))
                     rr += dr
                     cc += dc
-                if line and 0 <= rr < 8 and 0 <= cc < 8 and board[rr][cc] == player:
+                # Vérifier qu'on finit bien sur une pièce du joueur
+                if line and 0 <= rr < rows and 0 <= cc < cols and board[rr][cc] == player:
                     flips.extend(line)
             if flips:
                 valid_moves.append((r, c))
@@ -32,15 +45,20 @@ def apply_move(board, move, player):
     new_board = copy.deepcopy(board)
     r, c = move
     new_board[r][c] = player
+    
+    rows = len(board)
+    cols = len(board[0]) if rows > 0 else 0
 
     for dr, dc in DIRECTIONS:
         rr, cc = r + dr, c + dc
         line = []
-        while 0 <= rr < 8 and 0 <= cc < 8 and new_board[rr][cc] == opponent:
+        # Collecter les pièces adverses dans cette direction
+        while 0 <= rr < rows and 0 <= cc < cols and new_board[rr][cc] == opponent:
             line.append((rr, cc))
             rr += dr
             cc += dc
-        if line and 0 <= rr < 8 and 0 <= cc < 8 and new_board[rr][cc] == player:
+        # Si on finit sur une pièce du joueur, retourner toutes les pièces de la ligne
+        if line and 0 <= rr < rows and 0 <= cc < cols and new_board[rr][cc] == player:
             for flip_r, flip_c in line:
                 new_board[flip_r][flip_c] = player
     return new_board
@@ -77,8 +95,8 @@ def minimax(board, depth, player, maximizing):
                 best_move = move
         return min_eval, best_move
 
-def get_best_move(board, player):
-    _, move = minimax(board, depth=3, player=player, maximizing=True)
+def get_best_move(board, player, depth=3):
+    _, move = minimax(board, depth=depth, player=player, maximizing=True)
     return move if move else None
 
 

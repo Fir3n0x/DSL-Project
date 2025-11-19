@@ -332,6 +332,24 @@ export function renderHTML(model: Game): string {
             gap: 1em;
             margin-top: 1em;
         }
+        .difficulty-slider {
+            margin: 1em 0;
+        }
+        .difficulty-slider label {
+            display: block;
+            margin-bottom: 0.5em;
+            font-weight: 600;
+        }
+        .difficulty-slider input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+        }
+        .difficulty-value {
+            text-align: center;
+            margin-top: 0.5em;
+            font-size: 0.9em;
+            color: rgba(255,255,255,0.8);
+        }
         @media (max-width: 1200px) {
             .game-container {
                 flex-direction: column;
@@ -364,6 +382,14 @@ export function renderHTML(model: Game): string {
     <div style="margin: 1em 0;">
         <label><input type="radio" name="gameMode" value="human" checked> 👥 Humain vs Humain</label>
         <label><input type="radio" name="gameMode" value="ai"> 🤖 Humain vs IA</label>
+    </div>
+    
+    <div class="difficulty-slider">
+        <label for="aiDifficulty">🎯 Niveau de difficulté de l'IA</label>
+        <input type="range" id="aiDifficulty" min="1" max="6" value="3" step="1">
+        <div class="difficulty-value">
+            Niveau: <span id="difficultyDisplay">3</span> (Depth: <span id="depthDisplay">3</span>)
+        </div>
     </div>
     
     <div class="game-over" id="gameOver">
@@ -462,6 +488,20 @@ html += `</table>
         let moveCount = 0;
         let lastMove = null;
         let videoVisible = false;
+        let aiDepth = 3; // Profondeur par défaut
+        
+        // Écouter les changements du slider de difficulté
+        document.addEventListener('DOMContentLoaded', () => {
+            const difficultySlider = document.getElementById('aiDifficulty');
+            const difficultyDisplay = document.getElementById('difficultyDisplay');
+            const depthDisplay = document.getElementById('depthDisplay');
+            
+            difficultySlider.addEventListener('input', (e) => {
+                aiDepth = parseInt(e.target.value);
+                difficultyDisplay.textContent = aiDepth;
+                depthDisplay.textContent = aiDepth;
+            });
+        });
         
         function getGameMode() {
             return document.querySelector('input[name="gameMode"]:checked').value;
@@ -683,7 +723,7 @@ html += `</table>
                     <iframe 
                         width="280" 
                         height="500" 
-                        src="https://www.youtube.com/embed/OqPxaKs8xrk?autoplay=1&mute=1&loop=1&playlist=OqPxaKs8xrk" 
+                        src="https://www.youtube.com/embed/QPW3XwBoQlw?autoplay=1&mute=1&loop=1&playlist=QPW3XwBoQlw" 
                         frameborder="0" 
                         allow="autoplay; encrypted-media" 
                         allowfullscreen>
@@ -838,8 +878,7 @@ html += `</table>
             for (let c = 0; c < cols; c++) {
                 const cell = table.rows[r].cells[c];
                 if (!cell || cell.classList.contains('hidden')) {
-                    // Ne rien ajouter
-                    continue;
+                    row.push('wall');
                 } else {
                     const piece = cell.querySelector('.piece');
                     if (!piece) row.push(null);
@@ -859,7 +898,8 @@ html += `</table>
             const board = getBoardState();
             const payload = {
                 board: board,
-                player: currentPlayer
+                player: currentPlayer,
+                depth: aiDepth // Ajouter la profondeur au payload
             };
             
             fetch('http://127.0.0.1:5000/move', {
