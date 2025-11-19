@@ -358,6 +358,7 @@ export function renderHTML(model: Game): string {
     <div style="margin: 1em 0;">
         <button class="toggle-btn" onclick="toggleTheme()">🌓 Changer de thème</button>
         <button class="toggle-btn" onclick="sendStateToAI()">🤖 Envoyer état au serveur IA</button>
+        <button class="toggle-btn" onclick="toggleSecretVideo()">Bonus</button>
     </div>
     
     <div style="margin: 1em 0;">
@@ -376,7 +377,7 @@ export function renderHTML(model: Game): string {
             <div class="video-container" id="videoContainer">
                 <!-- La vidéo sera chargée dynamiquement -->
             </div>
-            <div class="video-title">🎉 Victoire ! 🎉</div>
+            <div class="video-title"></div>
         </div>
         
         <div class="board-section">
@@ -460,6 +461,7 @@ html += `</table>
         let isWaitingForAI = false;
         let moveCount = 0;
         let lastMove = null;
+        let videoVisible = false;
         
         function getGameMode() {
             return document.querySelector('input[name="gameMode"]:checked').value;
@@ -670,28 +672,31 @@ html += `</table>
             // Lancer les confettis
             createConfetti();
             
-            // Afficher la vidéo de victoire
-            showVictoryVideo();
         }
-        
-        function showVictoryVideo() {
+        function toggleSecretVideo() {
             const videoSection = document.getElementById('videoSection');
             const videoContainer = document.getElementById('videoContainer');
             
-            // Charger la vidéo YouTube
-            videoContainer.innerHTML = \`
-                <iframe 
-                    width="280" 
-                    height="500" 
-                    src="https://www.youtube.com/embed/OqPxaKs8xrk?autoplay=1&mute=1&loop=1&playlist=OqPxaKs8xrk" 
-                    frameborder="0" 
-                    allow="autoplay; encrypted-media" 
-                    allowfullscreen>
-                </iframe>
-            \`;
-            
-            // Afficher la section vidéo avec animation
-            videoSection.classList.add('show');
+            if (!videoVisible) {
+                // Charger et afficher la vidéo
+                videoContainer.innerHTML = \`
+                    <iframe 
+                        width="280" 
+                        height="500" 
+                        src="https://www.youtube.com/embed/OqPxaKs8xrk?autoplay=1&mute=1&loop=1&playlist=OqPxaKs8xrk" 
+                        frameborder="0" 
+                        allow="autoplay; encrypted-media" 
+                        allowfullscreen>
+                    </iframe>
+                \`;
+                videoSection.classList.add('show');
+                videoVisible = true;
+            } else {
+                // Masquer la vidéo
+                videoSection.classList.remove('show');
+                videoContainer.innerHTML = '';
+                videoVisible = false;
+            }
         }
         
         function createConfetti() {
