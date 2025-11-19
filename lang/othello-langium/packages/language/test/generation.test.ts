@@ -6,6 +6,7 @@ import { describe, test, expect } from "vitest";
 const variants = ['variant1', 'variant2', 'variant3', 'variant4', 'variant5'];
 const dslDir = path.resolve(__dirname, '../../../../../examples');
 const outputDir = path.resolve(__dirname, '../../../../../examples');
+const cliPath = path.resolve(__dirname, '../../cli/bin/cli.js');
 
 describe('Generation Tests', () => {
     for (const variant of variants) {
@@ -15,7 +16,7 @@ describe('Generation Tests', () => {
 
         test(`should generate HTML for ${variant}`, () => {
             // Exécute la commande de génération
-            execSync(`node ../cli/bin/cli.js generate ${dslPath} --target=html --out=${htmlPath}`);
+            execSync(`node "${cliPath}" generate "${dslPath}" --target=html --out="${htmlPath}"`);
 
             // Vérifie que le fichier HTML existe
             expect(fs.existsSync(htmlPath)).toBe(true);
@@ -30,7 +31,7 @@ describe('Generation Tests', () => {
 
         test(`should generate ASCII for ${variant}`, () => {
             // Exécute la commande de génération
-            execSync(`node ../cli/bin/cli.js generate ${dslPath} --target=ascii --out=${asciiPath}`);
+            execSync(`node "${cliPath}" generate "${dslPath}" --target=ascii --out="${asciiPath}"`);
 
             // Vérifie que le fichier ASCII existe
             expect(fs.existsSync(asciiPath)).toBe(true);
