@@ -96,6 +96,10 @@ export function renderHTML(model: Game): string {
     </div>
     <button class="toggle-btn" onclick="toggleTheme()">Switch Theme</button>
     <button class="toggle-btn" onclick="sendStateToAI()">Envoyer état au serveur IA</button>
+    <div style="margin: 1em 0;">
+        <label><input type="radio" name="gameMode" value="human" checked> Humain vs Humain</label>
+        <label><input type="radio" name="gameMode" value="ai"> Humain vs IA</label>
+    </div>
     <table>`;
 
     // --- Génération de la grille ---
@@ -141,50 +145,19 @@ html += `
 
         // --- Othello Game Logic ---
         let currentPlayer = 'black';
-
+        let isWaitingForAI = false;
+        
+        function getGameMode() {
+            return document.querySelector('input[name="gameMode"]:checked').value;
+        }
+        
         function getOpponent(player) {
             return player === 'black' ? 'white' : 'black';
         }
-
         const directions = [
             [0,1], [1,0], [0,-1], [-1,0],
             [1,1], [1,-1], [-1,1], [-1,-1]
         ];
-
-        function getPiece(cell) {
-            if (!cell) return null;
-            const piece = cell.querySelector('.piece');
-            if (!piece) return null;
-            if (piece.classList.contains('black')) return 'black';
-            if (piece.classList.contains('white')) return 'white';
-            return null;
-        }
-
-        function flipPieces(r, c, player) {
-            const table = document.querySelector('table');
-            const rows = table.rows.length;
-            const cols = table.rows[0].cells.length;
-
-            function getCell(r, c) {
-                if (r < 0 || r >= rows || c < 0 || c >= cols) return null;
-                return table.rows[r].cells[c];
-            }
-
-            for (const [dr, dc] of directions) {
-                let i = r + dr, j = c + dc, path = [];
-                while (getCell(i, j) && getPiece(getCell(i, j)) === getOpponent(player)) {
-                    path.push([i, j]);
-                    i += dr; j += dc;
-                }
-                if (path.length && getCell(i, j) && getPiece(getCell(i, j)) === player) {
-                    for (const [x, y] of path) {
-                        const cell = getCell(x, y);
-                        cell.querySelector('.piece').className = 'piece ' + player;
-                    }
-                }
-            }
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
             const table = document.querySelector('table');
             if (!table) return;
@@ -193,6 +166,14 @@ html += `
             function getCell(r, c) {
                 if (r < 0 || r >= rows || c < 0 || c >= cols) return null;
                 return table.rows[r].cells[c];
+            }
+            function getPiece(cell) {
+                if (!cell) return null;
+                const piece = cell.querySelector('.piece');
+                if (!piece) return null;
+                if (piece.classList.contains('black')) return 'black';
+                if (piece.classList.contains('white')) return 'white';
+                return null;
             }
             function validMove(r, c, player) {
                 if (getPiece(getCell(r, c))) return false;
@@ -208,7 +189,21 @@ html += `
                 }
                 return false;
             }
-
+            function flipPieces(r, c, player) {
+                for (const [dr, dc] of directions) {
+                    let i = r + dr, j = c + dc, path = [];
+                    while (getCell(i, j) && getPiece(getCell(i, j)) === getOpponent(player)) {
+                        path.push([i, j]);
+                        i += dr; j += dc;
+                    }
+                    if (path.length && getCell(i, j) && getPiece(getCell(i, j)) === player) {
+                        for (const [x, y] of path) {
+                            const cell = getCell(x, y);
+                            cell.querySelector('.piece').className = 'piece ' + player;
+                        }
+                    }
+                }
+            }
             for (let r = 0; r < rows; r++) {
                 for (let c = 0; c < cols; c++) {
                     const cell = getCell(r, c);
@@ -221,6 +216,11 @@ html += `
                         cell.appendChild(piece);
                         flipPieces(r, c, currentPlayer);
                         currentPlayer = getOpponent(currentPlayer);
+                        
+                        // Si mode IA et c'est le tour de l'IA
+                        if (getGameMode() === 'ai' && currentPlayer === 'white') {
+                            setTimeout(sendStateToAI, 500);
+                        }
                     });
                 }
             }
@@ -251,11 +251,15 @@ html += `
             return state;
         }
         function sendStateToAI() {
+            if (isWaitingForAI) return;
+            isWaitingForAI = true;
+            
             const board = getBoardState();
             const payload = {
                 board: board,
                 player: currentPlayer
             };
+            
             fetch('http://127.0.0.1:5000/move', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -263,24 +267,86 @@ html += `
             })
             .then(res => res.json())
             .then(data => {
-                // Traiter la réponse de l’IA ici
-                // --- 1. Récupérer le coup ---
-                const [r, c] = data.move;
-                const table = document.querySelector('table');
-                const cell = table.rows[r].cells[c];
-
-                // --- 2. Placer la pièce ---
-                const piece = document.createElement('div');
-                piece.className = 'piece ' + currentPlayer;
-                cell.appendChild(piece);
-
-                // --- 3. Retourner les pièces comme pour un coup normal ---
-                flipPieces(r, c, currentPlayer);
-
-                // --- 4. Passer au joueur suivant ---
-                currentPlayer = getOpponent(currentPlayer);
+                console.log('Réponse IA:', data);
+                if (data.move && Array.isArray(data.move) && data.move.length === 2) {
+                    const [row, col] = data.move;
+                    playAIMove(row, col);
+                }
+                isWaitingForAI = false;
+            })
+            .catch(err => {
+                console.error('Erreur IA:', err);
+                isWaitingForAI = false;
             });
-        }       
+        }
+        
+        function playAIMove(r, c) {
+            const table = document.querySelector('table');
+            if (!table) return;
+            
+            const cell = table.rows[r].cells[c];
+            if (!cell || cell.classList.contains('hidden')) return;
+            
+            function getPiece(cell) {
+                if (!cell) return null;
+                const piece = cell.querySelector('.piece');
+                if (!piece) return null;
+                if (piece.classList.contains('black')) return 'black';
+                if (piece.classList.contains('white')) return 'white';
+                return null;
+            }
+            
+            function validMove(r, c, player) {
+                const cell = table.rows[r]?.cells[c];
+                if (getPiece(cell)) return false;
+                const directions = [
+                    [0,1], [1,0], [0,-1], [-1,0],
+                    [1,1], [1,-1], [-1,1], [-1,-1]
+                ];
+                for (const [dr, dc] of directions) {
+                    let i = r + dr, j = c + dc, foundOpponent = false;
+                    while (table.rows[i]?.cells[j] && getPiece(table.rows[i].cells[j]) === getOpponent(player)) {
+                        foundOpponent = true;
+                        i += dr; j += dc;
+                    }
+                    if (foundOpponent && table.rows[i]?.cells[j] && getPiece(table.rows[i].cells[j]) === player) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            
+            function flipPieces(r, c, player) {
+                const directions = [
+                    [0,1], [1,0], [0,-1], [-1,0],
+                    [1,1], [1,-1], [-1,1], [-1,-1]
+                ];
+                for (const [dr, dc] of directions) {
+                    let i = r + dr, j = c + dc, path = [];
+                    while (table.rows[i]?.cells[j] && getPiece(table.rows[i].cells[j]) === getOpponent(player)) {
+                        path.push([i, j]);
+                        i += dr; j += dc;
+                    }
+                    if (path.length && table.rows[i]?.cells[j] && getPiece(table.rows[i].cells[j]) === player) {
+                        for (const [x, y] of path) {
+                            const cell = table.rows[x].cells[y];
+                            cell.querySelector('.piece').className = 'piece ' + player;
+                        }
+                    }
+                }
+            }
+            
+            if (!validMove(r, c, currentPlayer)) {
+                console.error('Coup IA invalide');
+                return;
+            }
+            
+            const piece = document.createElement('div');
+            piece.className = 'piece ' + currentPlayer;
+            cell.appendChild(piece);
+            flipPieces(r, c, currentPlayer);
+            currentPlayer = getOpponent(currentPlayer);
+        }
     </script>
 </body>
 </html>`;
