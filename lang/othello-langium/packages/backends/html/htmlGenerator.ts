@@ -141,13 +141,50 @@ html += `
 
         // --- Othello Game Logic ---
         let currentPlayer = 'black';
+
         function getOpponent(player) {
             return player === 'black' ? 'white' : 'black';
         }
+
         const directions = [
             [0,1], [1,0], [0,-1], [-1,0],
             [1,1], [1,-1], [-1,1], [-1,-1]
         ];
+
+        function getPiece(cell) {
+            if (!cell) return null;
+            const piece = cell.querySelector('.piece');
+            if (!piece) return null;
+            if (piece.classList.contains('black')) return 'black';
+            if (piece.classList.contains('white')) return 'white';
+            return null;
+        }
+
+        function flipPieces(r, c, player) {
+            const table = document.querySelector('table');
+            const rows = table.rows.length;
+            const cols = table.rows[0].cells.length;
+
+            function getCell(r, c) {
+                if (r < 0 || r >= rows || c < 0 || c >= cols) return null;
+                return table.rows[r].cells[c];
+            }
+
+            for (const [dr, dc] of directions) {
+                let i = r + dr, j = c + dc, path = [];
+                while (getCell(i, j) && getPiece(getCell(i, j)) === getOpponent(player)) {
+                    path.push([i, j]);
+                    i += dr; j += dc;
+                }
+                if (path.length && getCell(i, j) && getPiece(getCell(i, j)) === player) {
+                    for (const [x, y] of path) {
+                        const cell = getCell(x, y);
+                        cell.querySelector('.piece').className = 'piece ' + player;
+                    }
+                }
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const table = document.querySelector('table');
             if (!table) return;
@@ -156,14 +193,6 @@ html += `
             function getCell(r, c) {
                 if (r < 0 || r >= rows || c < 0 || c >= cols) return null;
                 return table.rows[r].cells[c];
-            }
-            function getPiece(cell) {
-                if (!cell) return null;
-                const piece = cell.querySelector('.piece');
-                if (!piece) return null;
-                if (piece.classList.contains('black')) return 'black';
-                if (piece.classList.contains('white')) return 'white';
-                return null;
             }
             function validMove(r, c, player) {
                 if (getPiece(getCell(r, c))) return false;
@@ -179,21 +208,7 @@ html += `
                 }
                 return false;
             }
-            function flipPieces(r, c, player) {
-                for (const [dr, dc] of directions) {
-                    let i = r + dr, j = c + dc, path = [];
-                    while (getCell(i, j) && getPiece(getCell(i, j)) === getOpponent(player)) {
-                        path.push([i, j]);
-                        i += dr; j += dc;
-                    }
-                    if (path.length && getCell(i, j) && getPiece(getCell(i, j)) === player) {
-                        for (const [x, y] of path) {
-                            const cell = getCell(x, y);
-                            cell.querySelector('.piece').className = 'piece ' + player;
-                        }
-                    }
-                }
-            }
+
             for (let r = 0; r < rows; r++) {
                 for (let c = 0; c < cols; c++) {
                     const cell = getCell(r, c);
@@ -249,7 +264,21 @@ html += `
             .then(res => res.json())
             .then(data => {
                 // Traiter la réponse de l’IA ici
-                console.log('Réponse IA:', data);
+                // --- 1. Récupérer le coup ---
+                const [r, c] = data.move;
+                const table = document.querySelector('table');
+                const cell = table.rows[r].cells[c];
+
+                // --- 2. Placer la pièce ---
+                const piece = document.createElement('div');
+                piece.className = 'piece ' + currentPlayer;
+                cell.appendChild(piece);
+
+                // --- 3. Retourner les pièces comme pour un coup normal ---
+                flipPieces(r, c, currentPlayer);
+
+                // --- 4. Passer au joueur suivant ---
+                currentPlayer = getOpponent(currentPlayer);
             });
         }       
     </script>
