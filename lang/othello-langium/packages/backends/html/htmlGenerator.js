@@ -10,6 +10,21 @@ let isWaitingForAI = false;
 let moveCount = 0;
 let lastMove = null;
 let videoVisible = false;
+let aiDepth = 3; // Profondeur par défaut
+
+// Écouter les changements du slider de difficulté
+document.addEventListener('DOMContentLoaded', () => {
+    loadYouTubeAPI();
+    const difficultySlider = document.getElementById('aiDifficulty');
+    const difficultyDisplay = document.getElementById('difficultyDisplay');
+    const depthDisplay = document.getElementById('depthDisplay');
+    
+    difficultySlider.addEventListener('input', (e) => {
+        aiDepth = parseInt(e.target.value);
+        difficultyDisplay.textContent = aiDepth;
+        depthDisplay.textContent = aiDepth;
+    });
+});
 
 function getGameMode() {
     return document.querySelector('input[name="gameMode"]:checked').value;
@@ -221,31 +236,81 @@ function endGame() {
     createConfetti();
     
 }
+// Ajouter une liste de vidéos prédéfinies
+const videoUrls = [
+"6djc3Cf3bd0",
+"BHRTDr6nGa8",
+"EvsfYYY_pIQ",
+"FOJgWchmd8o",
+"-aPw_oYhxHw",
+"--owd7CIjYs",
+];
 
+let currentVideoIndex = 0; // Index de la vidéo actuellement affichée
+let player; // Variable pour le lecteur YouTube
 function toggleSecretVideo() {
-    const videoSection = document.getElementById('videoSection');
-    const videoContainer = document.getElementById('videoContainer');
-    
-    if (!videoVisible) {
-        // Charger et afficher la vidéo
-        videoContainer.innerHTML = `
-            <iframe 
-                width="280" 
-                height="500" 
-                src="https://www.youtube.com/embed/OqPxaKs8xrk?autoplay=1&mute=1&loop=1&playlist=OqPxaKs8xrk" 
-                frameborder="0" 
-                allow="autoplay; encrypted-media" 
-                allowfullscreen>
-            </iframe>
-        `;
-        videoSection.classList.add('show');
-        videoVisible = true;
-    } else {
-        // Masquer la vidéo
-        videoSection.classList.remove('show');
-        videoContainer.innerHTML = '';
-        videoVisible = false;
+const videoSection = document.getElementById('videoSection');
+const videoContainer = document.getElementById('videoContainer');
+
+if (!videoVisible) {
+// Charger et afficher la première vidéo
+loadVideo(currentVideoIndex);
+videoSection.classList.add('show');
+videoVisible = true;
+} else {
+// Masquer la vidéo
+videoSection.classList.remove('show');
+videoContainer.innerHTML = '';
+videoVisible = false;
+}
+}
+function loadVideo(index) {
+const videoContainer = document.getElementById('videoContainer');
+const videoId = videoUrls[index];
+
+// Si le lecteur existe déjà, charger une nouvelle vidéo
+if (player) {
+player.loadVideoById(videoId);
+} else {
+// Créer un nouveau lecteur YouTube
+videoContainer.innerHTML = `<div id="youtubePlayer"></div>`;
+player = new YT.Player('youtubePlayer', {
+    height: '500',
+    width: '280',
+    videoId: videoId,
+    playerVars: {
+        autoplay: 1,
+        controls: 1,
+        loop: 0,
+        modestbranding: 1,
+        rel: 0
+    },
+    events: {
+        onStateChange: onPlayerStateChange
     }
+});
+}
+}
+
+function prevVideo() {
+currentVideoIndex = (currentVideoIndex - 1 + videoUrls.length) % videoUrls.length;
+loadVideo(currentVideoIndex);
+}
+
+function nextVideo() {
+currentVideoIndex = (currentVideoIndex + 1) % videoUrls.length;
+loadVideo(currentVideoIndex);
+}
+function onPlayerStateChange(event) {
+if (event.data === YT.PlayerState.ENDED) {
+nextVideo(); // Passer automatiquement à la vidéo suivante
+}
+}
+function loadYouTubeAPI() {
+const tag = document.createElement('script');
+tag.src = "https://www.youtube.com/iframe_api";
+const firstScriptTag = document.getElementsByTagName('script')[0];
+firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 }
 
 function createConfetti() {
@@ -387,8 +452,7 @@ function getBoardState() {
     for (let c = 0; c < cols; c++) {
         const cell = table.rows[r].cells[c];
         if (!cell || cell.classList.contains('hidden')) {
-            // Ne rien ajouter
-            continue;
+            row.push('wall');
         } else {
             const piece = cell.querySelector('.piece');
             if (!piece) row.push(null);
@@ -408,7 +472,8 @@ function sendStateToAI() {
     const board = getBoardState();
     const payload = {
         board: board,
-        player: currentPlayer
+        player: currentPlayer,
+        depth: aiDepth // Ajouter la profondeur au payload
     };
     
     fetch('http://127.0.0.1:5000/move', {

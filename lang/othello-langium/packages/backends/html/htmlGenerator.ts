@@ -389,6 +389,7 @@ export function renderHTML(model: Game): string {
             transform: scale(1.1);
             box-shadow: 0 6px 12px rgba(0,0,0,0.4);
         }
+
     </style>
 </head>
 
@@ -407,11 +408,20 @@ export function renderHTML(model: Game): string {
     <div style="margin: 1em 0;">
         <label><input type="radio" name="gameMode" value="human" checked> 👥 Humain vs Humain</label>
         <label><input type="radio" name="gameMode" value="ai"> 🤖 Humain vs IA</label>
+        <label><input type="radio" name="gameMode" value="ai-ai"> 🦾 IA vs IA</label>
+    </div>
+
+    <div class="speed-slider">
+        <label for="aiSpeed">⏱️ Vitesse de l'IA</label>
+        <input type="range" id="aiSpeed" min="100" max="2000" value="500" step="100" autocomplete="off">
+        <div class="speed-value">
+            Délai: <span id="speedDisplay">500</span> ms
+        </div>
     </div>
     
     <div class="difficulty-slider">
         <label for="aiDifficulty">🎯 Niveau de difficulté de l'IA</label>
-        <input type="range" id="aiDifficulty" min="1" max="6" value="3" step="1">
+        <input type="range" id="aiDifficulty" min="1" max="6" value="3" step="1" autocomplete="off">
         <div class="difficulty-value">
             Niveau: <span id="difficultyDisplay">3</span> (Depth: <span id="depthDisplay">3</span>)
         </div>
@@ -514,6 +524,7 @@ html += `</table>
         let lastMove = null;
         let videoVisible = false;
         let aiDepth = 3; // Profondeur par défaut
+        let aiSpeed = 500; // valeur par défaut
         
         // Écouter les changements du slider de difficulté
         document.addEventListener('DOMContentLoaded', () => {
@@ -526,6 +537,22 @@ html += `</table>
                 aiDepth = parseInt(e.target.value);
                 difficultyDisplay.textContent = aiDepth;
                 depthDisplay.textContent = aiDepth;
+            });
+
+            const speedSlider = document.getElementById('aiSpeed');
+            const speedDisplay = document.getElementById('speedDisplay');
+
+            speedSlider.addEventListener('input', (e) => {
+                aiSpeed = parseInt(e.target.value);
+                speedDisplay.textContent = aiSpeed;
+            });
+
+            document.querySelectorAll('input[name="gameMode"]').forEach(radio => {
+                radio.addEventListener('change', () => {
+                    if (radio.value === "ai-ai" && radio.checked) {
+                        sendStateToAI(); // démarrer la boucle IA vs IA
+                    }
+                });
             });
         });
         
@@ -592,7 +619,17 @@ html += `</table>
             document.getElementById('moveCount').textContent = moveCount;
             
             // Mise à jour du mode de jeu
-            const mode = getGameMode() === 'ai' ? '🤖 Humain vs IA' : '👥 Humain vs Humain';
+            let mode;
+            switch (getGameMode()) {
+                case 'ai':
+                    mode = '🤖 Humain vs IA';
+                    break;
+                case 'ai-ai':
+                    mode = '🦾 IA vs IA';
+                    break;
+                default:
+                    mode = '👥 Humain vs Humain';
+            }
             document.getElementById('gameModeDisplay').textContent = mode;
             
             // Vérifier si le joueur actuel peut jouer
@@ -992,6 +1029,11 @@ function loadYouTubeAPI() {
                     playAIMove(row, col);
                 }
                 isWaitingForAI = false;
+
+                // 🔁 Si mode IA vs IA, relancer automatiquement
+                if (getGameMode() === "ai-ai") {
+                    setTimeout(sendStateToAI, aiSpeed); // délai pour voir l’animation
+                }
             })
             .catch(err => {
                 console.error('Erreur IA:', err);
