@@ -367,10 +367,34 @@ export function renderHTML(model: Game): string {
                 position: static;
             }
         }
+        .home-btn {
+            position: fixed;       /* reste toujours visible */
+            top: 15px;             /* distance du haut */
+            left: 15px;            /* distance de la gauche */
+            padding: 0.6em 0.9em;
+            border: none;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            color: #fff;
+            font-size: 1.4em;      /* taille de l’icône maison */
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            z-index: 2000;         /* au-dessus du reste */
+        }
+
+        .home-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+        }
     </style>
 </head>
 
 <body class="${initialTheme}">
+    <button class="home-btn" onclick="window.location.href='/'">🏠</button>
+
     <h1>${model.name}</h1>
     <p class="info">Jouez à l'Othello ! Retournez les pièces adverses.</p>
     
