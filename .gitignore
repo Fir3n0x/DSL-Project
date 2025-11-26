@@ -1,0 +1,36 @@
+# Root .gitignore for DSL-Project
+
+# Node / TypeScript
+node_modules/
+dist/
+out/
+build/
+generated/
+syntaxes/
+*.tsbuildinfo
+*.vsix
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.env
+
+# Editors / OS
+.vscode/
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+.DS_Store
+
+# Logs and data
+*.log
+data/
+
+# Examples: ignore all HTML example files recursively
+examples/**/*.html
+
+# Misc
+.idea/
+.cache/
+coverage/
