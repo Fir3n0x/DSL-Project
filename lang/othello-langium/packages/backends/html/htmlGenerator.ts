@@ -43,6 +43,7 @@ export function renderHTML(model: Game): string {
         <label><input type="radio" name="gameMode" value="human" checked> 👥 Humain vs Humain</label>
         <label><input type="radio" name="gameMode" value="ai"> 🤖 Humain vs IA</label>
         <label><input type="radio" name="gameMode" value="ai-ai"> 🦾 IA vs IA</label>
+        <label><input type="radio" name="gameMode" value="llm"> 🧠 Humain vs LLM</label>
     </div>
 
     <div class="speed-slider">

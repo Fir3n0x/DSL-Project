@@ -1,5 +1,17 @@
-# ai.py
 import copy
+import sys
+import os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '../llm'))
+try:
+    from openrouter_client import OpenRouterClient
+except ImportError:
+    print("Warning: 'openrouter_client.py' non trouvé. Le mode LLM ne fonctionnera pas.")
+    OpenRouterClient = None
+
+# =================
+# MINIMAX (VS IA)
+# =================
 
 DIRECTIONS = [(-1, -1), (-1, 0), (-1, 1),
               (0, -1),          (0, 1),
@@ -9,31 +21,22 @@ def get_valid_moves(board, player):
     opponent = "white" if player == "black" else "black"
     valid_moves = []
     
+    # Détection dynamique de la taille
     rows = len(board)
     cols = len(board[0]) if rows > 0 else 0
 
     for r in range(rows):
         for c in range(cols):
-            # Ignorer les cases qui ne sont pas vides (mur, pièce existante, etc.)
-            if board[r][c] is not None and board[r][c] != "wall":
-                continue
-            # Ignorer les murs
-            if board[r][c] == "wall":
-                continue
-            # La case doit être None (vide)
             if board[r][c] is not None:
                 continue
-                
             flips = []
             for dr, dc in DIRECTIONS:
                 rr, cc = r + dr, c + dc
                 line = []
-                # Parcourir dans la direction et collecter les pièces adverses
                 while 0 <= rr < rows and 0 <= cc < cols and board[rr][cc] == opponent:
                     line.append((rr, cc))
                     rr += dr
                     cc += dc
-                # Vérifier qu'on finit bien sur une pièce du joueur
                 if line and 0 <= rr < rows and 0 <= cc < cols and board[rr][cc] == player:
                     flips.extend(line)
             if flips:
@@ -47,17 +50,15 @@ def apply_move(board, move, player):
     new_board[r][c] = player
     
     rows = len(board)
-    cols = len(board[0]) if rows > 0 else 0
+    cols = len(board[0])
 
     for dr, dc in DIRECTIONS:
         rr, cc = r + dr, c + dc
         line = []
-        # Collecter les pièces adverses dans cette direction
         while 0 <= rr < rows and 0 <= cc < cols and new_board[rr][cc] == opponent:
             line.append((rr, cc))
             rr += dr
             cc += dc
-        # Si on finit sur une pièce du joueur, retourner toutes les pièces de la ligne
         if line and 0 <= rr < rows and 0 <= cc < cols and new_board[rr][cc] == player:
             for flip_r, flip_c in line:
                 new_board[flip_r][flip_c] = player
@@ -80,6 +81,7 @@ def minimax(board, depth, player, maximizing):
         max_eval = float("-inf")
         for move in valid_moves:
             new_board = apply_move(board, move, player)
+            # Appel récursif
             eval_score, _ = minimax(new_board, depth - 1, "white" if player == "black" else "black", False)
             if eval_score > max_eval:
                 max_eval = eval_score
@@ -95,12 +97,119 @@ def minimax(board, depth, player, maximizing):
                 best_move = move
         return min_eval, best_move
 
-def get_best_move(board, player, depth=3):
+# Wrapper pour l'appel depuis server.py
+def get_minimax_move(board, player):
+    depth = 3
+    if len(board) * len(board[0]) > 100:
+        depth = 2
+        
     _, move = minimax(board, depth=depth, player=player, maximizing=True)
-    return move if move else None
+    return move
 
+# =================
+# LLM
+# =================
 
-# def get_best_move(board, player):
-#     # Ici tu implémentes ton algorithme Minimax pour Othello
-#     # Pour l'instant, on renvoie un coup fictif
-#     return [2, 3]  # Exemple : ligne 2, colonne 3
+def board_to_string(board):
+    # Convertit le plateau en texte pour le prompt LLM
+    if not board: return ""
+    rows = len(board)
+    cols = len(board[0])
+    
+    header = "  " + " ".join([chr(ord('A') + i) for i in range(cols)])
+    result = [header]
+    
+    for r in range(rows):
+        row_str = f"{r+1} "
+        for c in range(cols):
+            cell = board[r][c]
+            if cell == 'black': char = 'B'
+            elif cell == 'white': char = 'W'
+            else: char = '.'
+            row_str += char + " "
+        result.append(row_str)
+    return "\n".join(result)
+
+def parse_llm_move(move_str):
+    # Convertit 'C3' en [2, 2]
+    if not move_str or len(move_str) < 2: return None
+    try:
+        move_str = move_str.strip().replace('.', '')
+        col_char = move_str[0].upper()
+        row_char = move_str[1:]
+        
+        c = ord(col_char) - ord('A')
+        r = int(row_char) - 1
+        return [r, c]
+    except:
+        return None
+
+def to_algebraic(r, c):
+    return f"{chr(ord('A') + c)}{r + 1}"
+
+def get_llm_move(board, player, config):
+    # Interroge le LLM
+    if not OpenRouterClient:
+        print("Erreur: OpenRouterClient non disponible.")
+        return None
+
+    # Calculer les coups valides pour guider le LLM
+    valid_moves = get_valid_moves(board, player)
+    if not valid_moves:
+        return None
+    
+    valid_moves_str = ", ".join([to_algebraic(r, c) for r, c in valid_moves])
+
+    client = OpenRouterClient(model="openai/gpt-4o", temperature=0.2)
+    
+    board_str = board_to_string(board)
+    player_name = "NOIR (B)" if player == "black" else "BLANC (W)"
+    
+    system_prompt = f"""
+    Tu es un expert du jeu Othello. Tu joues les {player_name}.
+    
+    RÈGLES :
+    - Plateau : {config.get('rows')} lignes x {config.get('cols')} colonnes.
+    - Tu dois capturer des pions adverses en les encadrant.
+    - IMPORTANT : Tu ne peux jouer que sur l'une des cases suivantes : [{valid_moves_str}].
+    
+    FORMAT DE RÉPONSE (JSON STRICT) :
+    {{
+        "reasoning": "Explication courte...",
+        "move": "C3"
+    }}
+    Choisis le meilleur coup parmi la liste fournie.
+    """
+    
+    user_prompt = f"""
+    État actuel :
+    {board_str}
+    
+    Coups légaux possibles : {valid_moves_str}
+    Quel est le meilleur coup ?
+    """
+
+    print(f"--- [LLM] Réflexion en cours pour {player} (Choix: {valid_moves_str}) ---")
+    try:
+        _, json_resp, _ = client.chat([
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ])
+        
+        if json_resp and 'move' in json_resp:
+            move_str = json_resp['move']
+            parsed_move = parse_llm_move(move_str)
+            
+            # Vérification stricte côté serveur
+            if parsed_move:
+                move_tuple = (parsed_move[0], parsed_move[1])
+                if move_tuple in valid_moves:
+                    print(f"--- [LLM] Coup validé : {move_str} ({json_resp.get('reasoning')}) ---")
+                    return parsed_move
+                else:
+                    print(f"--- [LLM] Coup illégal rejeté : {move_str}. Repli sur Minimax. ---")
+            
+    except Exception as e:
+        print(f"--- [LLM] Erreur : {e} ---")
+        
+    return None

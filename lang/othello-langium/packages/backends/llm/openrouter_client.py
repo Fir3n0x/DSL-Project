@@ -4,6 +4,8 @@ import time
 import requests
 from dotenv import load_dotenv
 from llm_logger import log_interaction
+import re
+
 
 load_dotenv()
 
@@ -43,14 +45,24 @@ class OpenRouterClient:
         response = requests.post(self.url, headers=headers, json=payload)
         latency = time.time() - start
 
-        response.raise_for_status()
+        # Vérifier les erreurs HTTP
+        try:
+            response.raise_for_status()
+        except Exception as e:
+            log_interaction(payload, str(e), None, self.params, latency)
+            raise e
+        
         data = response.json()
-
         raw_text = data["choices"][0]["message"]["content"]
 
-        # essayer de parser en JSON (optionnel)
+        clean_text = raw_text.strip()
+        match = re.search(r"```(?:json)?\s*(.*?)\s*```", clean_text, re.DOTALL)
+        if match:
+            clean_text = match.group(1)
+
+        # Essayer de parser en JSON
         try:
-            final_json = json.loads(raw_text)
+            final_json = json.loads(clean_text)
         except Exception:
             final_json = None
 

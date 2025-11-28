@@ -13,6 +13,7 @@ syntaxes/
 # Python
 .venv/
 __pycache__/
+lang/othello-langium/packages/backends/server/__pycache__/
 *.pyc
 .env
 
