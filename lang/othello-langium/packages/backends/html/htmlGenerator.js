@@ -1,3 +1,6 @@
+const blackName = document.body.dataset.black;
+const whiteName = document.body.dataset.white;
+
 function toggleTheme() {
     const body = document.body;
     body.classList.toggle('dark');
@@ -11,6 +14,7 @@ let moveCount = 0;
 let lastMove = null;
 let videoVisible = false;
 let aiDepth = 3; // Profondeur par défaut
+let aiSpeed = 500; // valeur par défaut
 
 // Écouter les changements du slider de difficulté
 document.addEventListener('DOMContentLoaded', () => {
@@ -23,6 +27,22 @@ document.addEventListener('DOMContentLoaded', () => {
         aiDepth = parseInt(e.target.value);
         difficultyDisplay.textContent = aiDepth;
         depthDisplay.textContent = aiDepth;
+    });
+
+    const speedSlider = document.getElementById('aiSpeed');
+    const speedDisplay = document.getElementById('speedDisplay');
+
+    speedSlider.addEventListener('input', (e) => {
+        aiSpeed = parseInt(e.target.value);
+        speedDisplay.textContent = aiSpeed;
+    });
+
+    document.querySelectorAll('input[name="gameMode"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            if (radio.value === "ai-ai" && radio.checked) {
+                sendStateToAI(); // démarrer la boucle IA vs IA
+            }
+        });
     });
 });
 
@@ -57,7 +77,7 @@ function flipPieceWithAnimation(piece, newColor) {
 function updateGameInfo() {
     // Mise à jour du tour actuel
     const turnPlayer = document.getElementById('turnPlayer');
-    const playerName = currentPlayer === 'black' ? '${model.players.black.name}' : '${model.players.white.name}';
+    const playerName = currentPlayer === 'black' ? blackName : whiteName;
     const playerSymbol = currentPlayer === 'black' ? '⚫' : '⚪';
     turnPlayer.textContent = playerSymbol + ' ' + playerName;
     
@@ -89,7 +109,17 @@ function updateGameInfo() {
     document.getElementById('moveCount').textContent = moveCount;
     
     // Mise à jour du mode de jeu
-    const mode = getGameMode() === 'ai' ? '🤖 Humain vs IA' : '👥 Humain vs Humain';
+    let mode;
+    switch (getGameMode()) {
+        case 'ai':
+            mode = '🤖 Humain vs IA';
+            break;
+        case 'ai-ai':
+            mode = '🦾 IA vs IA';
+            break;
+        default:
+            mode = '👥 Humain vs Humain';
+    }
     document.getElementById('gameModeDisplay').textContent = mode;
     
     // Vérifier si le joueur actuel peut jouer
@@ -213,9 +243,9 @@ function endGame() {
     // Déterminer le vainqueur
     let winner = '';
     if (blackCount > whiteCount) {
-        winner = '⚫ ${model.players.black.name} gagne !';
+        winner = `⚫ ${blackName} gagne !`;
     } else if (whiteCount > blackCount) {
-        winner = '⚪ ${model.players.white.name} gagne !';
+        winner = `⚪ ${whiteName} gagne !`;
     } else {
         winner = 'Égalité ! 🤝';
     }
@@ -223,10 +253,10 @@ function endGame() {
     // Afficher l'écran de fin
     const finalScore = document.getElementById('finalScore');
     finalScore.innerHTML = `
-        <div>\${winner}</div>
+        <div>${winner}</div>
         <div style="margin-top: 1em;">
-            <b>⚫ ${model.players.black.name}:</b> \${blackCount} pions<br>
-            <b>⚪ ${model.players.white.name}:</b> \${whiteCount} pions
+            <b>⚫ ${blackName}:</b> ${blackCount} pions<br>
+            <b>⚪ ${whiteName}:</b> ${whiteCount} pions
         </div>
     `;
     
@@ -324,7 +354,7 @@ function createConfetti() {
             confetti.style.left = Math.random() * 100 + 'vw';
             confetti.style.top = '-20px';
             confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-            confetti.style.animation = `confetti-fall \${(Math.random() * 2 + 3)}s linear forwards`;
+            confetti.style.animation = `confetti-fall ${(Math.random() * 2 + 3)}s linear forwards`;
             confetti.style.animationDelay = Math.random() * 0.5 + 's';
             
             // Formes variées
@@ -349,6 +379,12 @@ function passTurn() {
         setTimeout(sendStateToAI, 500);
     }
 }
+
+
+window.toggleTheme = toggleTheme;
+window.sendStateToAI = sendStateToAI;
+window.toggleSecretVideo = toggleSecretVideo;
+window.passTurn = passTurn;
 
 // Écouter les changements de mode de jeu
 document.querySelectorAll('input[name="gameMode"]').forEach(radio => {
@@ -489,6 +525,11 @@ function sendStateToAI() {
             playAIMove(row, col);
         }
         isWaitingForAI = false;
+
+        // 🔁 Si mode IA vs IA, relancer automatiquement
+        if (getGameMode() === "ai-ai") {
+            setTimeout(sendStateToAI, aiSpeed); // délai pour voir l’animation
+        }
     })
     .catch(err => {
         console.error('Erreur IA:', err);
@@ -582,3 +623,4 @@ function playAIMove(r, c) {
     currentPlayer = getOpponent(currentPlayer);
     updateGameInfo();
 }
+
