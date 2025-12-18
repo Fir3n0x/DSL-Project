@@ -1,6 +1,9 @@
 const blackName = document.body.dataset.black;
 const whiteName = document.body.dataset.white;
 
+// Sauvegarde de la configuration initiale du plateau
+let initialBoardState = null;
+
 function toggleTheme() {
     const body = document.body;
     body.classList.toggle('dark');
@@ -16,9 +19,98 @@ let videoVisible = false;
 let aiDepth = 3; // Profondeur par défaut
 let aiSpeed = 500; // valeur par défaut
 
+// Fonction pour sauvegarder l'état initial du plateau
+function saveInitialBoardState() {
+    const table = document.querySelector('table');
+    if (!table) return;
+    
+    const rows = table.rows.length;
+    const cols = table.rows[0].cells.length;
+    initialBoardState = [];
+    
+    for (let r = 0; r < rows; r++) {
+        const row = [];
+        for (let c = 0; c < cols; c++) {
+            const cell = table.rows[r].cells[c];
+            if (cell.classList.contains('hidden')) {
+                row.push({ type: 'hidden' });
+            } else {
+                const piece = cell.querySelector('.piece');
+                if (!piece) {
+                    row.push({ type: 'empty' });
+                } else if (piece.classList.contains('black')) {
+                    row.push({ type: 'black' });
+                } else if (piece.classList.contains('white')) {
+                    row.push({ type: 'white' });
+                }
+            }
+        }
+        initialBoardState.push(row);
+    }
+}
+
+// Fonction pour réinitialiser le plateau à son état initial
+function resetBoard() {
+    if (!initialBoardState) return;
+    
+    const table = document.querySelector('table');
+    if (!table) return;
+    
+    // Réinitialiser toutes les variables de jeu
+    currentPlayer = 'black';
+    isWaitingForAI = false;
+    moveCount = 0;
+    lastMove = null;
+    
+    // Cacher le bouton "passer son tour" s'il est visible
+    const passTurnBtn = document.getElementById('passTurnBtn');
+    if (passTurnBtn) {
+        passTurnBtn.style.display = 'none';
+    }
+    
+    // Cacher l'écran de fin de partie s'il est visible
+    const gameOverDiv = document.getElementById('gameOver');
+    if (gameOverDiv) {
+        gameOverDiv.style.display = 'none';
+    }
+    
+    // Restaurer l'état initial du plateau
+    for (let r = 0; r < initialBoardState.length; r++) {
+        for (let c = 0; c < initialBoardState[r].length; c++) {
+            const cell = table.rows[r].cells[c];
+            const cellState = initialBoardState[r][c];
+            
+            // Supprimer toutes les pièces existantes
+            const existingPiece = cell.querySelector('.piece');
+            if (existingPiece) {
+                existingPiece.remove();
+            }
+            
+            // Restaurer l'état initial
+            if (cellState.type === 'black') {
+                const piece = document.createElement('div');
+                piece.className = 'piece black';
+                cell.appendChild(piece);
+            } else if (cellState.type === 'white') {
+                const piece = document.createElement('div');
+                piece.className = 'piece white';
+                cell.appendChild(piece);
+            }
+            // Si type === 'empty' ou 'hidden', on ne fait rien (cellule vide ou masquée)
+        }
+    }
+    
+    // Mettre à jour l'affichage
+    updateGameInfo();
+}
+
 // Écouter les changements du slider de difficulté
 document.addEventListener('DOMContentLoaded', () => {
     loadYouTubeAPI();
+    
+    // Sauvegarder l'état initial du plateau au chargement
+    saveInitialBoardState();
+    
     const difficultySlider = document.getElementById('aiDifficulty');
     const difficultyDisplay = document.getElementById('difficultyDisplay');
     const depthDisplay = document.getElementById('depthDisplay');
@@ -37,10 +129,17 @@ document.addEventListener('DOMContentLoaded', () => {
         speedDisplay.textContent = aiSpeed;
     });
 
+    // Écouter les changements de mode de jeu
     document.querySelectorAll('input[name="gameMode"]').forEach(radio => {
         radio.addEventListener('change', () => {
+            // Réinitialiser le plateau à chaque changement de mode
+            resetBoard();
+            
+            // Si le mode est IA vs IA, démarrer la boucle
             if (radio.value === "ai-ai" && radio.checked) {
-                sendStateToAI(); // démarrer la boucle IA vs IA
+                setTimeout(() => {
+                    sendStateToAI();
+                }, 1000); // Petit délai pour voir la réinitialisation
             }
         });
     });
@@ -122,6 +221,8 @@ function updateGameInfo() {
         const moveSymbol = lastMove.player === 'black' ? '⚫' : '⚪';
         document.getElementById('lastMove').textContent = 
             moveSymbol + ' → Ligne ' + (r + 1) + ', Colonne ' + (c + 1);
+    } else {
+        document.getElementById('lastMove').textContent = '-';
     }
     
     // Mise à jour du nombre de coups
@@ -255,15 +356,31 @@ function checkIfPlayerCanMove() {
             console.log(`Joueur ${currentPlayer} ne peut pas jouer, cliquez sur "Passer son tour"`);
         }
     } else {
-        // Le joueur peut jouer, masquer le bouton
-        document.getElementById('passTurnBtn').style.display = 'none';
+        const passTurnBtn = document.getElementById('passTurnBtn');
+        if (passTurnBtn) {
+            passTurnBtn.style.display = 'none';
+        }
+    }
+}
+
+function passTurn() {
+    console.log(`${currentPlayer} passe son tour`);
+    currentPlayer = getOpponent(currentPlayer);
+    updateGameInfo();
+    
+    // Si c'est le tour de l'IA après avoir passé, la faire jouer
+    const mode = getGameMode();
+    if ((mode === 'ai' || mode === 'llm') && currentPlayer === 'white') {
+        setTimeout(sendStateToAI, 500);
+    } else if (mode === 'ai-ai') {
+        setTimeout(sendStateToAI, aiSpeed);
     }
 }
 
 function endGame() {
-    // Compter les scores finaux
     const table = document.querySelector('table');
     let blackCount = 0, whiteCount = 0;
+    
     for (let r = 0; r < table.rows.length; r++) {
         for (let c = 0; c < table.rows[r].cells.length; c++) {
             const cell = table.rows[r].cells[c];
@@ -275,165 +392,119 @@ function endGame() {
         }
     }
     
-    // Déterminer le vainqueur
-    let winner = '';
-    if (blackCount > whiteCount) {
-        winner = `⚫ ${blackName} gagne !`;
-    } else if (whiteCount > blackCount) {
-        winner = `⚪ ${whiteName} gagne !`;
-    } else {
-        winner = 'Égalité ! 🤝';
-    }
+    let winner;
+    if (blackCount > whiteCount) winner = `⚫ ${blackName} gagne !`;
+    else if (whiteCount > blackCount) winner = `⚪ ${whiteName} gagne !`;
+    else winner = '🤝 Match nul !';
     
-    // Afficher l'écran de fin
-    const finalScore = document.getElementById('finalScore');
-    finalScore.innerHTML = `
-        <div>${winner}</div>
-        <div style="margin-top: 1em;">
-            <b>⚫ ${blackName}:</b> ${blackCount} pions<br>
-            <b>⚪ ${whiteName}:</b> ${whiteCount} pions
-        </div>
+    document.getElementById('finalScore').innerHTML = `
+        ${winner}<br>
+        ⚫ ${blackName}: ${blackCount}<br>
+        ⚪ ${whiteName}: ${whiteCount}
     `;
     
-    document.getElementById('gameOver').style.display = 'block';
+    const gameOverDiv = document.getElementById('gameOver');
+    gameOverDiv.style.display = 'block';
     
-    // Lancer les confettis
-    createConfetti();
-    
-}
-// Ajouter une liste de vidéos prédéfinies
-const videoUrls = [
-"6djc3Cf3bd0",
-"BHRTDr6nGa8",
-"EvsfYYY_pIQ",
-"FOJgWchmd8o",
-"-aPw_oYhxHw",
-"--owd7CIjYs",
-];
-
-let currentVideoIndex = 0; // Index de la vidéo actuellement affichée
-let player; // Variable pour le lecteur YouTube
-function toggleSecretVideo() {
-const videoSection = document.getElementById('videoSection');
-const videoContainer = document.getElementById('videoContainer');
-
-if (!videoVisible) {
-// Charger et afficher la première vidéo
-loadVideo(currentVideoIndex);
-videoSection.classList.add('show');
-videoVisible = true;
-} else {
-// Masquer la vidéo
-videoSection.classList.remove('show');
-videoContainer.innerHTML = '';
-videoVisible = false;
-}
-}
-function loadVideo(index) {
-const videoContainer = document.getElementById('videoContainer');
-const videoId = videoUrls[index];
-
-// Si le lecteur existe déjà, charger une nouvelle vidéo
-if (player) {
-player.loadVideoById(videoId);
-} else {
-// Créer un nouveau lecteur YouTube
-videoContainer.innerHTML = `<div id="youtubePlayer"></div>`;
-player = new YT.Player('youtubePlayer', {
-    height: '500',
-    width: '280',
-    videoId: videoId,
-    playerVars: {
-        autoplay: 1,
-        controls: 1,
-        loop: 0,
-        modestbranding: 1,
-        rel: 0
-    },
-    events: {
-        onStateChange: onPlayerStateChange
+    // Animation de confettis
+    for (let i = 0; i < 50; i++) {
+        setTimeout(() => createConfetti(), i * 30);
     }
-});
-}
-}
-
-function prevVideo() {
-currentVideoIndex = (currentVideoIndex - 1 + videoUrls.length) % videoUrls.length;
-loadVideo(currentVideoIndex);
-}
-
-function nextVideo() {
-currentVideoIndex = (currentVideoIndex + 1) % videoUrls.length;
-loadVideo(currentVideoIndex);
-}
-function onPlayerStateChange(event) {
-if (event.data === YT.PlayerState.ENDED) {
-nextVideo(); // Passer automatiquement à la vidéo suivante
-}
-}
-function loadYouTubeAPI() {
-const tag = document.createElement('script');
-tag.src = "https://www.youtube.com/iframe_api";
-const firstScriptTag = document.getElementsByTagName('script')[0];
-firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 }
 
 function createConfetti() {
-    const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffd700', '#ff69b4'];
-    const confettiCount = 150;
+    const confetti = document.createElement('div');
+    confetti.className = 'confetti';
+    confetti.style.left = Math.random() * 100 + '%';
+    confetti.style.backgroundColor = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'][Math.floor(Math.random() * 5)];
+    confetti.style.animation = `confetti-fall ${2 + Math.random() * 2}s linear`;
+    document.body.appendChild(confetti);
+    setTimeout(() => confetti.remove(), 4000);
+}
+
+// --- YouTube API ---
+let player;
+let videoIds = [];
+let currentVideoIndex = 0;
+
+function loadYouTubeAPI() {
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+}
+
+window.onYouTubeIframeAPIReady = function() {
+    console.log('YouTube API prête !');
+};
+
+function toggleSecretVideo() {
+    const videoSection = document.getElementById('videoSection');
+    const videoContainer = document.getElementById('videoContainer');
+    const videoTitle = document.querySelector('.video-title');
     
-    for (let i = 0; i < confettiCount; i++) {
-        setTimeout(() => {
-            const confetti = document.createElement('div');
-            confetti.className = 'confetti';
-            confetti.style.left = Math.random() * 100 + 'vw';
-            confetti.style.top = '-20px';
-            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-            confetti.style.animation = `confetti-fall ${(Math.random() * 2 + 3)}s linear forwards`;
-            confetti.style.animationDelay = Math.random() * 0.5 + 's';
-            
-            // Formes variées
-            if (Math.random() > 0.5) {
-                confetti.style.borderRadius = '50%';
-            }
-            
-            document.body.appendChild(confetti);
-            
-            setTimeout(() => confetti.remove(), 6000);
-        }, i * 20);
+    if (!videoVisible) {
+        videoIds = [
+            'X8avbciUP3c', 
+            'KQ6zr6kCPj8', 
+            'yCmWOZ81njQ'
+        ];
+        
+        currentVideoIndex = Math.floor(Math.random() * videoIds.length);
+        
+        videoSection.classList.add('show');
+        videoVisible = true;
+        
+        if (!player) {
+            player = new YT.Player('videoContainer', {
+                height: '100%',
+                width: '100%',
+                videoId: videoIds[currentVideoIndex],
+                playerVars: {
+                    'autoplay': 1,
+                    'controls': 1
+                },
+                events: {
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        } else {
+            player.loadVideoById(videoIds[currentVideoIndex]);
+        }
+        
+        videoTitle.textContent = getVideoTitle(currentVideoIndex);
+        
+    } else {
+        if (player) {
+            player.stopVideo();
+        }
+        videoSection.classList.remove('show');
+        videoVisible = false;
     }
 }
 
-function passTurn() {
-    console.log(currentPlayer + ' passe son tour');
-    currentPlayer = getOpponent(currentPlayer);
-    updateGameInfo();
-
-    const mode = getGameMode();
-    // Si mode IA ou LLM et c'est le tour de l'IA
-    if ((mode === 'ai' || mode === 'llm') && currentPlayer === 'white') {
-        setTimeout(sendStateToAI, 500);
+function onPlayerStateChange(event) {
+    if (event.data == YT.PlayerState.ENDED) {
+        currentVideoIndex = (currentVideoIndex + 1) % videoIds.length;
+        player.loadVideoById(videoIds[currentVideoIndex]);
+        
+        const videoTitle = document.querySelector('.video-title');
+        videoTitle.textContent = getVideoTitle(currentVideoIndex);
     }
 }
 
+function getVideoTitle(index) {
+    const titles = [
+        "🎵 Rick Astley - Never Gonna Give You Up",
+        "🎵 Darude - Sandstorm",
+        "🎵 Toto - Africa"
+    ];
+    return titles[index];
+}
 
-window.toggleTheme = toggleTheme;
-window.sendStateToAI = sendStateToAI;
-window.toggleSecretVideo = toggleSecretVideo;
-window.passTurn = passTurn;
-
-// Écouter les changements de mode de jeu
-document.querySelectorAll('input[name="gameMode"]').forEach(radio => {
-    radio.addEventListener('change', updateGameInfo);
-});
-
-const directions = [
-    [0,1], [1,0], [0,-1], [-1,0],
-    [1,1], [1,-1], [-1,1], [-1,-1]
-];
+// --- Initialisation du plateau ---
 document.addEventListener('DOMContentLoaded', () => {
     const table = document.querySelector('table');
-    if (!table) return;
     const rows = table.rows.length;
     const cols = table.rows[0].cells.length;
     function getCell(r, c) {
@@ -448,6 +519,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (piece.classList.contains('white')) return 'white';
         return null;
     }
+    const directions = [
+        [0,1], [1,0], [0,-1], [-1,0],
+        [1,1], [1,-1], [-1,1], [-1,-1]
+    ];
     function validMove(r, c, player) {
         if (getPiece(getCell(r, c))) return false;
         for (const [dr, dc] of directions) {
@@ -581,7 +656,7 @@ function sendStateToAI() {
 
         // 🔁 Si mode IA vs IA, relancer automatiquement
         if (getGameMode() === "ai-ai") {
-            setTimeout(sendStateToAI, aiSpeed); // délai pour voir l’animation
+            setTimeout(sendStateToAI, aiSpeed); // délai pour voir l'animation
         }
     })
     .catch(err => {
@@ -676,4 +751,3 @@ function playAIMove(r, c) {
     currentPlayer = getOpponent(currentPlayer);
     updateGameInfo();
 }
-
