@@ -3,6 +3,7 @@ const whiteName = document.body.dataset.white;
 
 // Sauvegarde de la configuration initiale du plateau
 let initialBoardState = null;
+let gameSessionActive = false;
 
 function toggleTheme() {
     const body = document.body;
@@ -19,7 +20,66 @@ let videoVisible = false;
 let aiDepth = 3; // Profondeur par défaut
 let aiSpeed = 500; // valeur par défaut
 
-// Fonction pour sauvegarder l'état initial du plateau
+/**
+ * Notifie le backend qu'une nouvelle partie commence
+ */
+async function notifyGameStart() {
+    const mode = getGameMode();
+    
+    // On ne notifie le backend que pour le mode LLM
+    if (mode !== 'llm') {
+        gameSessionActive = false;
+        return;
+    }
+    
+    try {
+        const response = await fetch('http://127.0.0.1:5000/start_game', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ game_mode: 'human_vs_llm' })
+        });
+        
+        const data = await response.json();
+        if (data.status === 'success') {
+            console.log('Nouvelle session de jeu créée:', data.session_id);
+            gameSessionActive = true;
+        }
+    } catch (error) {
+        console.error('Erreur lors de la création de session:', error);
+        gameSessionActive = false;
+    }
+}
+
+/**
+ * Notifie le backend qu'une partie est terminée
+ */
+async function notifyGameEnd(winner, finalScores) {
+    // On ne notifie que si une session est active
+    if (!gameSessionActive) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('http://127.0.0.1:5000/end_game', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                winner: winner,
+                final_scores: finalScores
+            })
+        });
+        
+        const data = await response.json();
+        if (data.status === 'success') {
+            console.log('Partie terminée et sauvegardée:', data.log_path);
+        }
+        gameSessionActive = false;
+    } catch (error) {
+        console.error('Erreur lors de la finalisation de session:', error);
+    }
+}
+
+// Sauvegarder l'état initial du plateau
 function saveInitialBoardState() {
     const table = document.querySelector('table');
     if (!table) return;
@@ -49,8 +109,8 @@ function saveInitialBoardState() {
     }
 }
 
-// Fonction pour réinitialiser le plateau à son état initial
-function resetBoard() {
+// Réinitialiser le plateau à son état initial
+async function resetBoard() {
     if (!initialBoardState) return;
     
     const table = document.querySelector('table');
@@ -96,16 +156,21 @@ function resetBoard() {
                 piece.className = 'piece white';
                 cell.appendChild(piece);
             }
-            // Si type === 'empty' ou 'hidden', on ne fait rien (cellule vide ou masquée)
         }
     }
     
     // Mettre à jour l'affichage
     updateGameInfo();
+    
+    // Notifier le backend qu'une nouvelle partie commence
+    await notifyGameStart();
 }
 
 // Écouter les changements du slider de difficulté
 document.addEventListener('DOMContentLoaded', () => {
+    // Notifier le backend au chargement de la page (nouvelle partie)
+    notifyGameStart();
+    
     loadYouTubeAPI();
     
     // Sauvegarder l'état initial du plateau au chargement
@@ -131,15 +196,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Écouter les changements de mode de jeu
     document.querySelectorAll('input[name="gameMode"]').forEach(radio => {
-        radio.addEventListener('change', () => {
+        radio.addEventListener('change', async () => {
             // Réinitialiser le plateau à chaque changement de mode
-            resetBoard();
+            await resetBoard();
             
             // Si le mode est IA vs IA, démarrer la boucle
             if (radio.value === "ai-ai" && radio.checked) {
                 setTimeout(() => {
                     sendStateToAI();
-                }, 1000); // Petit délai pour voir la réinitialisation
+                }, 1000);
             }
         });
     });
@@ -377,7 +442,8 @@ function passTurn() {
     }
 }
 
-function endGame() {
+// Fonction endGame pour notifier le backend
+async function endGame() {
     const table = document.querySelector('table');
     let blackCount = 0, whiteCount = 0;
     
@@ -393,9 +459,17 @@ function endGame() {
     }
     
     let winner;
-    if (blackCount > whiteCount) winner = `⚫ ${blackName} gagne !`;
-    else if (whiteCount > blackCount) winner = `⚪ ${whiteName} gagne !`;
-    else winner = '🤝 Match nul !';
+    let winnerForBackend; // Format pour le backend
+    if (blackCount > whiteCount) {
+        winner = `⚫ ${blackName} gagne !`;
+        winnerForBackend = 'black';
+    } else if (whiteCount > blackCount) {
+        winner = `⚪ ${whiteName} gagne !`;
+        winnerForBackend = 'white';
+    } else {
+        winner = '🤝 Match nul !';
+        winnerForBackend = 'draw';
+    }
     
     document.getElementById('finalScore').innerHTML = `
         ${winner}<br>
@@ -405,6 +479,12 @@ function endGame() {
     
     const gameOverDiv = document.getElementById('gameOver');
     gameOverDiv.style.display = 'block';
+    
+    // Notifier le backend de la fin de partie
+    await notifyGameEnd(winnerForBackend, {
+        black: blackCount,
+        white: whiteCount
+    });
     
     // Animation de confettis
     for (let i = 0; i < 50; i++) {
@@ -600,6 +680,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialiser l'affichage
     updateGameInfo();
 });
+
 function getBoardState() {
     const table = document.querySelector('table');
     if (!table) return [];
@@ -607,23 +688,24 @@ function getBoardState() {
     const cols = table.rows[0].cells.length;
     const state = [];
     for (let r = 0; r < rows; r++) {
-    const row = [];
-    for (let c = 0; c < cols; c++) {
-        const cell = table.rows[r].cells[c];
-        if (!cell || cell.classList.contains('hidden')) {
-            row.push('wall');
-        } else {
-            const piece = cell.querySelector('.piece');
-            if (!piece) row.push(null);
-            else if (piece.classList.contains('black')) row.push('black');
-            else if (piece.classList.contains('white')) row.push('white');
-            else row.push(null);
+        const row = [];
+        for (let c = 0; c < cols; c++) {
+            const cell = table.rows[r].cells[c];
+            if (!cell || cell.classList.contains('hidden')) {
+                row.push('wall');
+            } else {
+                const piece = cell.querySelector('.piece');
+                if (!piece) row.push(null);
+                else if (piece.classList.contains('black')) row.push('black');
+                else if (piece.classList.contains('white')) row.push('white');
+                else row.push(null);
+            }
         }
+        state.push(row);
     }
-    state.push(row);
-}
     return state;
 }
+
 function sendStateToAI() {
     if (isWaitingForAI) return;
     isWaitingForAI = true;
@@ -654,7 +736,7 @@ function sendStateToAI() {
         }
         isWaitingForAI = false;
 
-        // 🔁 Si mode IA vs IA, relancer automatiquement
+        // Si mode IA vs IA, relancer automatiquement
         if (getGameMode() === "ai-ai") {
             setTimeout(sendStateToAI, aiSpeed); // délai pour voir l'animation
         }
