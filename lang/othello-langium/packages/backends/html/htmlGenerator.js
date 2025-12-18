@@ -221,28 +221,38 @@ function checkIfPlayerCanMove() {
         
         // Si aucun des deux ne peut jouer, fin de partie
         if (!opponentCanMove) {
+            console.log('Aucun joueur ne peut jouer, fin de partie');
             endGame();
             return;
         }
         
-        // Sinon, afficher le bouton passer son tour
-        const passTurnBtn = document.getElementById('passTurnBtn');
+        // Déterminer qui doit passer son tour
         const mode = getGameMode();
-        const isAiTurn = (mode === 'ai' || mode === 'llm') && currentPlayer === 'white';
-        const isHumanTurnInAiMode = (mode === 'ai' || mode === 'llm') && currentPlayer === 'black';
-        if (mode === 'human') {
-            passTurnBtn.style.display = 'inline-block';
-        } else if (isHumanTurnInAiMode) {
-            // Humain bloqué en mode IA/LLM
-            passTurnBtn.style.display = 'inline-block';
-        } else if (isAiTurn) {
-            // IA bloquée, passer automatiquement
+        const passTurnBtn = document.getElementById('passTurnBtn');
+        const isAiOrLlm = (mode === 'ai' || mode === 'llm');
+        const isAiTurn = isAiOrLlm && currentPlayer === 'white';
+        const isHumanTurn = mode === 'human' || (isAiOrLlm && currentPlayer === 'black');
+        
+        if (isAiTurn) {
+            // L'IA/LLM ne peut pas jouer, passer automatiquement
             passTurnBtn.style.display = 'none';
+            console.log(`${mode.toUpperCase()} (${currentPlayer}) ne peut pas jouer, passage automatique du tour`);
+            
             setTimeout(() => {
-                console.log('IA bloquée, passage automatique du tour');
-                currentPlayer = getOpponent(currentPlayer);
+                currentPlayer = opponent;
                 updateGameInfo();
+                
+                // Si c'est toujours au tour de l'IA après le passage, la laisser jouer
+                if (mode === 'ai' && currentPlayer === 'white') {
+                    makeAiMove();
+                } else if (mode === 'llm' && currentPlayer === 'white') {
+                    makeLlmMove();
+                }
             }, 1000);
+        } else if (isHumanTurn) {
+            // Le joueur humain ne peut pas jouer, afficher le bouton
+            passTurnBtn.style.display = 'inline-block';
+            console.log(`Joueur ${currentPlayer} ne peut pas jouer, cliquez sur "Passer son tour"`);
         }
     } else {
         // Le joueur peut jouer, masquer le bouton
