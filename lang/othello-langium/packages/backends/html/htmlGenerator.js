@@ -17,7 +17,9 @@ let isWaitingForAI = false;
 let moveCount = 0;
 let lastMove = null;
 let videoVisible = false;
-let aiDepth = 3; // Profondeur par défaut
+let aiDepth = 3; // Profondeur par défaut (pour mode IA unique)
+let aiDepthBlack = 3; // Profondeur pour joueur noir en mode IA vs IA
+let aiDepthWhite = 3; // Profondeur pour joueur blanc en mode IA vs IA
 let aiSpeed = 500; // valeur par défaut
 
 /**
@@ -176,6 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Sauvegarder l'état initial du plateau au chargement
     saveInitialBoardState();
     
+    // Slider de difficulté pour mode IA unique (Humain vs IA / LLM)
     const difficultySlider = document.getElementById('aiDifficulty');
     const difficultyDisplay = document.getElementById('difficultyDisplay');
     const depthDisplay = document.getElementById('depthDisplay');
@@ -184,6 +187,28 @@ document.addEventListener('DOMContentLoaded', () => {
         aiDepth = parseInt(e.target.value);
         difficultyDisplay.textContent = aiDepth;
         depthDisplay.textContent = aiDepth;
+    });
+    
+    // Slider de difficulté pour joueur noir (mode IA vs IA)
+    const difficultySliderBlack = document.getElementById('aiDifficultyBlack');
+    const difficultyDisplayBlack = document.getElementById('difficultyDisplayBlack');
+    const depthDisplayBlack = document.getElementById('depthDisplayBlack');
+    
+    difficultySliderBlack.addEventListener('input', (e) => {
+        aiDepthBlack = parseInt(e.target.value);
+        difficultyDisplayBlack.textContent = aiDepthBlack;
+        depthDisplayBlack.textContent = aiDepthBlack;
+    });
+    
+    // Slider de difficulté pour joueur blanc (mode IA vs IA)
+    const difficultySliderWhite = document.getElementById('aiDifficultyWhite');
+    const difficultyDisplayWhite = document.getElementById('difficultyDisplayWhite');
+    const depthDisplayWhite = document.getElementById('depthDisplayWhite');
+    
+    difficultySliderWhite.addEventListener('input', (e) => {
+        aiDepthWhite = parseInt(e.target.value);
+        difficultyDisplayWhite.textContent = aiDepthWhite;
+        depthDisplayWhite.textContent = aiDepthWhite;
     });
 
     const speedSlider = document.getElementById('aiSpeed');
@@ -241,18 +266,28 @@ function flipPieceWithAnimation(piece, newColor) {
 function updateControlsVisibility() {
     const mode = getGameMode();
     const speedSlider = document.querySelector('.speed-slider');
-    const difficultySlider = document.querySelector('.difficulty-slider');
+    const singleDifficultySlider = document.getElementById('singleDifficultySlider');
+    const blackDifficultySlider = document.getElementById('blackDifficultySlider');
+    const whiteDifficultySlider = document.getElementById('whiteDifficultySlider');
     
     // On cache tout par défaut si c'est "Humain vs Humain"
     if (mode === 'human' || mode === 'llm') {
         if (speedSlider) speedSlider.style.display = 'none';
-        if (difficultySlider) difficultySlider.style.display = 'none';
+        if (singleDifficultySlider) singleDifficultySlider.style.display = 'none';
+        if (blackDifficultySlider) blackDifficultySlider.style.display = 'none';
+        if (whiteDifficultySlider) whiteDifficultySlider.style.display = 'none';
+    } else if (mode === 'ai-ai') {
+        // Mode IA vs IA : afficher les deux sliders séparés
+        if (speedSlider) speedSlider.style.display = 'block';
+        if (singleDifficultySlider) singleDifficultySlider.style.display = 'none';
+        if (blackDifficultySlider) blackDifficultySlider.style.display = 'block';
+        if (whiteDifficultySlider) whiteDifficultySlider.style.display = 'block';
     } else {
-        // Pour les modes IA (Minimax) et IA vs IA
-        if (difficultySlider) difficultySlider.style.display = 'block';
-        
-        // La vitesse n'est pertinente que pour le mode "IA vs IA" (vitesse de l'animation)
-        if (speedSlider) speedSlider.style.display = (mode === 'ai-ai' || mode === 'ai') ? 'block' : 'none';
+        // Mode Humain vs IA : afficher le slider unique
+        if (speedSlider) speedSlider.style.display = 'block';
+        if (singleDifficultySlider) singleDifficultySlider.style.display = 'block';
+        if (blackDifficultySlider) blackDifficultySlider.style.display = 'none';
+        if (whiteDifficultySlider) whiteDifficultySlider.style.display = 'none';
     }
 }
 
@@ -525,9 +560,7 @@ function toggleSecretVideo() {
     
     if (!videoVisible) {
         videoIds = [
-            'X8avbciUP3c', 
-            'KQ6zr6kCPj8', 
-            'yCmWOZ81njQ'
+            'QPW3XwBoQlw', 
         ];
         
         currentVideoIndex = Math.floor(Math.random() * videoIds.length);
@@ -575,9 +608,7 @@ function onPlayerStateChange(event) {
 
 function getVideoTitle(index) {
     const titles = [
-        "🎵 Rick Astley - Never Gonna Give You Up",
-        "🎵 Darude - Sandstorm",
-        "🎵 Toto - Africa"
+        "Subway Surfers",
     ];
     return titles[index];
 }
@@ -715,10 +746,17 @@ function sendStateToAI() {
     const aiType = (mode === 'llm') ? 'llm' : 'minimax';
 
     const board = getBoardState();
+    
+    // Déterminer la depth à utiliser selon le mode et le joueur
+    let currentDepth = aiDepth;
+    if (mode === 'ai-ai') {
+        currentDepth = (currentPlayer === 'black') ? aiDepthBlack : aiDepthWhite;
+    }
+    
     const payload = {
         board: board,
         player: currentPlayer,
-        depth: aiDepth, // Ajouter la profondeur au payload
+        depth: currentDepth, // Ajouter la profondeur appropriée au payload
         aiType: aiType // IA ou LLM
     };
     
@@ -730,6 +768,32 @@ function sendStateToAI() {
     .then(res => res.json())
     .then(data => {
         console.log('Réponse IA:', data);
+        
+        // Vérifier si l'IA peut jouer
+        if (!data.canPlay || !data.move) {
+            console.log(`${currentPlayer} ne peut pas jouer. Passage du tour.`);
+            isWaitingForAI = false;
+            
+            // Afficher un message temporaire
+            const turnPlayerElem = document.getElementById('turnPlayer');
+            const originalText = turnPlayerElem.textContent;
+            const playerSymbol = currentPlayer === 'black' ? '⚫' : '⚪';
+            const playerName = currentPlayer === 'black' ? blackName : whiteName;
+            turnPlayerElem.textContent = `${playerSymbol} ${playerName} passe son tour (aucun coup valide)`;
+            
+            // Passer au joueur suivant après un délai
+            setTimeout(() => {
+                currentPlayer = getOpponent(currentPlayer);
+                updateGameInfo();
+                
+                // Si mode IA vs IA, continuer avec l'autre IA
+                if (getGameMode() === "ai-ai") {
+                    setTimeout(sendStateToAI, aiSpeed);
+                }
+            }, 1500);
+            return;
+        }
+        
         if (data.move && Array.isArray(data.move) && data.move.length === 2) {
             const [row, col] = data.move;
             playAIMove(row, col);

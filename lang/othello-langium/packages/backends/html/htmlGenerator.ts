@@ -53,11 +53,27 @@ export function renderHTML(model: Game): string {
         </div>
     </div>
     
-    <div class="difficulty-slider">
+    <div class="difficulty-slider" id="singleDifficultySlider">
         <label for="aiDifficulty">🎯 Niveau de difficulté de l'IA</label>
-        <input type="range" id="aiDifficulty" min="1" max="6" value="3" step="1" autocomplete="off">
+        <input type="range" id="aiDifficulty" min="1" max="10" value="3" step="1" autocomplete="off">
         <div class="difficulty-value">
             Niveau: <span id="difficultyDisplay">3</span> (Depth: <span id="depthDisplay">3</span>)
+        </div>
+    </div>
+    
+    <div class="difficulty-slider" id="blackDifficultySlider" style="display: none;">
+        <label for="aiDifficultyBlack">⚫ Difficulté IA Noir</label>
+        <input type="range" id="aiDifficultyBlack" min="1" max="6" value="3" step="1" autocomplete="off">
+        <div class="difficulty-value">
+            Niveau: <span id="difficultyDisplayBlack">3</span> (Depth: <span id="depthDisplayBlack">3</span>)
+        </div>
+    </div>
+    
+    <div class="difficulty-slider" id="whiteDifficultySlider" style="display: none;">
+        <label for="aiDifficultyWhite">⚪ Difficulté IA Blanc</label>
+        <input type="range" id="aiDifficultyWhite" min="1" max="6" value="3" step="1" autocomplete="off">
+        <div class="difficulty-value">
+            Niveau: <span id="difficultyDisplayWhite">3</span> (Depth: <span id="depthDisplayWhite">3</span>)
         </div>
     </div>
     

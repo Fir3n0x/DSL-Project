@@ -120,9 +120,10 @@ def move():
         board = data.get("board")
         player = data.get("player")
         ai_type = data.get("aiType", "minimax")
+        depth = data.get("depth", 3)  # Récupérer la profondeur
         config = data.get("config", {})
 
-        print(f"Demande de coup : {player} | Mode : {ai_type} | Config : {config}")
+        print(f"Demande de coup : {player} | Mode : {ai_type} | Depth : {depth} | Config : {config}")
 
         # Si c'est un coup du LLM et qu'aucune session n'est active, en créer une
         if ai_type == "llm" and LOGGING_ENABLED:
@@ -140,11 +141,18 @@ def move():
             # Si le LLM échoue (erreur API ou réponse invalide), on se replie sur Minimax
             if best_move is None:
                 print("Le LLM n'a pas renvoyé de coup valide. Repli sur Minimax.")
-                best_move = get_minimax_move(board, player)
+                best_move = get_minimax_move(board, player, depth)
         else:
-            best_move = get_minimax_move(board, player)
+            best_move = get_minimax_move(board, player, depth)
         
-        return jsonify({"move": best_move})
+        # Vérifier si le joueur peut jouer
+        can_play = best_move is not None
+        
+        return jsonify({
+            "move": best_move,
+            "canPlay": can_play,
+            "message": "No valid moves" if not can_play else None
+        })
 
     except Exception as e:
         print(f"ERREUR SERVEUR : {e}")

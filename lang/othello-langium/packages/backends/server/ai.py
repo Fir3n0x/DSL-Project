@@ -94,10 +94,14 @@ def minimax(board, depth, player, maximizing):
                 best_move = move
         return min_eval, best_move
 
-def get_minimax_move(board, player):
-    depth = 3
-    if len(board) * len(board[0]) > 100:
-        depth = 2
+def get_minimax_move(board, player, depth=None):
+    if depth is None:
+        depth = 3
+        if len(board) * len(board[0]) > 100:
+            depth = 2
+    
+    # Limiter la profondeur maximale pour éviter les calculs trop longs
+    depth = min(depth, 6)
         
     _, move = minimax(board, depth=depth, player=player, maximizing=True)
     return move
