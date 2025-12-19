@@ -1,9 +1,25 @@
-const blackName = document.body.dataset.black;
-const whiteName = document.body.dataset.white;
+// Noms par défaut (peuvent être remplacés dynamiquement)
+let blackName = document.body.dataset.black || "Alice";
+let whiteName = document.body.dataset.white || "Bob";
 
 // Sauvegarde de la configuration initiale du plateau
 let initialBoardState = null;
+
+// Variable pour tracker l'état de la session de jeu
 let gameSessionActive = false;
+
+function getPlayerNames() {
+    return { black: 'Alice', white: 'Bob' };
+}
+
+/**
+ * Met à jour les noms des joueurs affichés
+ */
+function updatePlayerNames() {
+    const names = getPlayerNames();
+    blackName = names.black;
+    whiteName = names.white;
+}
 
 function toggleTheme() {
     const body = document.body;
@@ -28,17 +44,23 @@ let aiSpeed = 500; // valeur par défaut
 async function notifyGameStart() {
     const mode = getGameMode();
     
-    // On ne notifie le backend que pour le mode LLM
-    if (mode !== 'llm') {
+    // On notifie le backend pour tous les modes qui utilisent le LLM
+    const llmModes = ['llm', 'ai-llm', 'llm-llm'];
+    if (!llmModes.includes(mode)) {
         gameSessionActive = false;
         return;
     }
+    
+    // Déterminer le mode de jeu pour les logs
+    let gameMode = 'human_vs_llm';
+    if (mode === 'ai-llm') gameMode = 'ai_vs_llm';
+    else if (mode === 'llm-llm') gameMode = 'llm_vs_llm';
     
     try {
         const response = await fetch('http://127.0.0.1:5000/start_game', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ game_mode: 'human_vs_llm' })
+            body: JSON.stringify({ game_mode: gameMode })
         });
         
         const data = await response.json();
@@ -81,7 +103,7 @@ async function notifyGameEnd(winner, finalScores) {
     }
 }
 
-// Sauvegarder l'état initial du plateau
+// Fonction pour sauvegarder l'état initial du plateau
 function saveInitialBoardState() {
     const table = document.querySelector('table');
     if (!table) return;
@@ -111,7 +133,7 @@ function saveInitialBoardState() {
     }
 }
 
-// Réinitialiser le plateau à son état initial
+// Fonction pour réinitialiser le plateau à son état initial
 async function resetBoard() {
     if (!initialBoardState) return;
     
@@ -161,6 +183,9 @@ async function resetBoard() {
         }
     }
     
+    // Mettre à jour les noms des joueurs selon le mode
+    updatePlayerNames();
+    
     // Mettre à jour l'affichage
     updateGameInfo();
     
@@ -170,6 +195,9 @@ async function resetBoard() {
 
 // Écouter les changements du slider de difficulté
 document.addEventListener('DOMContentLoaded', () => {
+    // Mettre à jour les noms des joueurs au chargement
+    updatePlayerNames();
+    
     // Notifier le backend au chargement de la page (nouvelle partie)
     notifyGameStart();
     
@@ -225,8 +253,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // Réinitialiser le plateau à chaque changement de mode
             await resetBoard();
             
-            // Si le mode est IA vs IA, démarrer la boucle
-            if (radio.value === "ai-ai" && radio.checked) {
+            // Si un mode automatique est sélectionné, démarrer la boucle
+            const autoModes = ['ai-ai', 'ai-llm', 'llm-llm'];
+            if (autoModes.includes(radio.value) && radio.checked) {
                 setTimeout(() => {
                     sendStateToAI();
                 }, 1000);
@@ -270,21 +299,29 @@ function updateControlsVisibility() {
     const blackDifficultySlider = document.getElementById('blackDifficultySlider');
     const whiteDifficultySlider = document.getElementById('whiteDifficultySlider');
     
-    // On cache tout par défaut si c'est "Humain vs Humain"
-    if (mode === 'human' || mode === 'llm') {
-        if (speedSlider) speedSlider.style.display = 'none';
+    // Déterminer quels contrôles afficher selon le mode
+    const needsSpeedControl = ['ai', 'ai-ai', 'ai-llm'];
+    if (speedSlider) {
+        speedSlider.style.display = needsSpeedControl.includes(mode) ? 'block' : 'none';
+    }
+    
+    if (mode === 'human' || mode === 'llm' || mode === 'llm-llm') {
+        // Pas d'IA Minimax du tout
         if (singleDifficultySlider) singleDifficultySlider.style.display = 'none';
         if (blackDifficultySlider) blackDifficultySlider.style.display = 'none';
         if (whiteDifficultySlider) whiteDifficultySlider.style.display = 'none';
     } else if (mode === 'ai-ai') {
-        // Mode IA vs IA : afficher les deux sliders séparés
-        if (speedSlider) speedSlider.style.display = 'block';
+        // Deux IA Minimax : sliders séparés pour chaque joueur
         if (singleDifficultySlider) singleDifficultySlider.style.display = 'none';
         if (blackDifficultySlider) blackDifficultySlider.style.display = 'block';
         if (whiteDifficultySlider) whiteDifficultySlider.style.display = 'block';
-    } else {
-        // Mode Humain vs IA : afficher le slider unique
-        if (speedSlider) speedSlider.style.display = 'block';
+    } else if (mode === 'ai-llm') {
+        // IA vs LLM : slider unique pour l'IA (noir)
+        if (singleDifficultySlider) singleDifficultySlider.style.display = 'block';
+        if (blackDifficultySlider) blackDifficultySlider.style.display = 'none';
+        if (whiteDifficultySlider) whiteDifficultySlider.style.display = 'none';
+    } else if (mode === 'ai') {
+        // Humain vs IA : slider unique pour l'IA (blanc)
         if (singleDifficultySlider) singleDifficultySlider.style.display = 'block';
         if (blackDifficultySlider) blackDifficultySlider.style.display = 'none';
         if (whiteDifficultySlider) whiteDifficultySlider.style.display = 'none';
@@ -339,6 +376,12 @@ function updateGameInfo() {
             break;
         case 'llm':
             mode = '🧠 Humain vs LLM';
+            break;
+        case 'ai-llm':
+            mode = '⚔️ IA vs LLM';
+            break;
+        case 'llm-llm':
+            mode = '🧠🧠 LLM vs LLM';
             break;
         default:
             mode = '👥 Humain vs Humain';
@@ -430,27 +473,34 @@ function checkIfPlayerCanMove() {
         // Déterminer qui doit passer son tour
         const mode = getGameMode();
         const passTurnBtn = document.getElementById('passTurnBtn');
-        const isAiOrLlm = (mode === 'ai' || mode === 'llm');
-        const isAiTurn = isAiOrLlm && currentPlayer === 'white';
-        const isHumanTurn = mode === 'human' || (isAiOrLlm && currentPlayer === 'black');
         
-        if (isAiTurn) {
-            // L'IA/LLM ne peut pas jouer, passer automatiquement
+        // Modes automatiques (les joueurs passent automatiquement)
+        const autoModes = ['ai-ai', 'ai-llm', 'llm-llm'];
+        const isAutoMode = autoModes.includes(mode);
+        
+        // Modes où le joueur blanc est contrôlé par l'IA/LLM
+        const whiteIsAI = ['ai', 'llm', 'ai-ai', 'ai-llm', 'llm-llm'].includes(mode);
+        const isAiTurn = whiteIsAI && currentPlayer === 'white';
+        
+        // Modes où le joueur noir est contrôlé par l'IA/LLM
+        const blackIsAI = ['ai-ai', 'ai-llm', 'llm-llm'].includes(mode);
+        const isBlackAiTurn = blackIsAI && currentPlayer === 'black';
+        
+        if (isAutoMode || isAiTurn || isBlackAiTurn) {
+            // Passage automatique du tour pour les IA/LLM
             passTurnBtn.style.display = 'none';
-            console.log(`${mode.toUpperCase()} (${currentPlayer}) ne peut pas jouer, passage automatique du tour`);
+            console.log(`${currentPlayer} (automatique) ne peut pas jouer, passage du tour`);
             
             setTimeout(() => {
                 currentPlayer = opponent;
                 updateGameInfo();
                 
-                // Si c'est toujours au tour de l'IA après le passage, la laisser jouer
-                if (mode === 'ai' && currentPlayer === 'white') {
-                    makeAiMove();
-                } else if (mode === 'llm' && currentPlayer === 'white') {
-                    makeLlmMove();
+                // Relancer le tour si nécessaire
+                if (isAutoMode || (whiteIsAI && currentPlayer === 'white') || (blackIsAI && currentPlayer === 'black')) {
+                    setTimeout(sendStateToAI, aiSpeed);
                 }
             }, 1000);
-        } else if (isHumanTurn) {
+        } else {
             // Le joueur humain ne peut pas jouer, afficher le bouton
             passTurnBtn.style.display = 'inline-block';
             console.log(`Joueur ${currentPlayer} ne peut pas jouer, cliquez sur "Passer son tour"`);
@@ -470,14 +520,14 @@ function passTurn() {
     
     // Si c'est le tour de l'IA après avoir passé, la faire jouer
     const mode = getGameMode();
-    if ((mode === 'ai' || mode === 'llm') && currentPlayer === 'white') {
-        setTimeout(sendStateToAI, 500);
-    } else if (mode === 'ai-ai') {
+    const autoModes = ['ai-ai', 'ai-llm', 'llm-llm'];
+    const whiteIsAI = ['ai', 'llm', 'ai-ai', 'ai-llm', 'llm-llm'].includes(mode);
+    
+    if (autoModes.includes(mode) || (whiteIsAI && currentPlayer === 'white')) {
         setTimeout(sendStateToAI, aiSpeed);
     }
 }
 
-// Fonction endGame pour notifier le backend
 async function endGame() {
     const table = document.querySelector('table');
     let blackCount = 0, whiteCount = 0;
@@ -494,7 +544,7 @@ async function endGame() {
     }
     
     let winner;
-    let winnerForBackend; // Format pour le backend
+    let winnerForBackend;
     if (blackCount > whiteCount) {
         winner = `⚫ ${blackName} gagne !`;
         winnerForBackend = 'black';
@@ -675,15 +725,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const cell = getCell(r, c);
             if (!cell || cell.classList.contains('hidden')) continue;
             cell.addEventListener('click', () => {   
-                const mode = getGameMode();             
-                // Si c'est le tour de l'IA (en mode "ai" ou "llm"), on ne fait rien
-                if ((mode === 'ai' || mode === 'llm') && currentPlayer === 'white') {
-                    console.log("C'est au tour de l'IA. Vous ne pouvez pas jouer.");
+                const mode = getGameMode();
+                
+                // Modes où l'humain ne peut jamais jouer
+                const autoOnlyModes = ['ai-ai', 'ai-llm', 'llm-llm'];
+                if (autoOnlyModes.includes(mode)) {
+                    console.log("Mode automatique, l'humain ne peut pas jouer.");
                     return;
                 }
                 
-                // Si on est en mode "IA vs IA", l'humain ne doit jamais pouvoir cliquer
-                if (mode === 'ai-ai') {
+                // Modes où l'humain joue les noirs (blanc = IA/LLM)
+                const humanBlackModes = ['ai', 'llm'];
+                if (humanBlackModes.includes(mode) && currentPlayer === 'white') {
+                    console.log("C'est au tour de l'IA/LLM. Vous ne pouvez pas jouer.");
                     return;
                 }
 
@@ -700,7 +754,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentPlayer = getOpponent(currentPlayer);
                 updateGameInfo();
                 
-                // Si mode IA ou LLM et c'est le tour de l'IA
+                // Si mode IA ou LLM et c'est le tour de l'IA/LLM
                 if ((mode === 'ai' || mode === 'llm') && currentPlayer === 'white') {
                     setTimeout(sendStateToAI, 500);
                 }
@@ -742,10 +796,24 @@ function sendStateToAI() {
     isWaitingForAI = true;
 
     const mode = getGameMode();
-    // Si le mode est 'llm', on envoie 'llm', sinon 'minimax' par défaut
-    const aiType = (mode === 'llm') ? 'llm' : 'minimax';
-
     const board = getBoardState();
+    
+    // Déterminer le type d'IA en fonction du mode et du joueur
+    let aiType;
+    
+    if (mode === 'ai-llm') {
+        // IA vs LLM: noir = minimax, blanc = llm
+        aiType = currentPlayer === 'black' ? 'minimax' : 'llm';
+    } else if (mode === 'llm-llm') {
+        // LLM vs LLM: les deux jouent avec le LLM
+        aiType = 'llm';
+    } else if (mode === 'llm') {
+        // Humain vs LLM: blanc joue avec le LLM
+        aiType = 'llm';
+    } else {
+        // Par défaut (ai, ai-ai): utiliser minimax
+        aiType = 'minimax';
+    }
     
     // Déterminer la depth à utiliser selon le mode et le joueur
     let currentDepth = aiDepth;
@@ -756,9 +824,11 @@ function sendStateToAI() {
     const payload = {
         board: board,
         player: currentPlayer,
-        depth: currentDepth, // Ajouter la profondeur appropriée au payload
-        aiType: aiType // IA ou LLM
+        depth: currentDepth,
+        aiType: aiType
     };
+    
+    console.log(`Envoi requête: ${currentPlayer} joue avec ${aiType}`);
     
     fetch('http://127.0.0.1:5000/move', {
         method: 'POST',
@@ -800,9 +870,10 @@ function sendStateToAI() {
         }
         isWaitingForAI = false;
 
-        // Si mode IA vs IA, relancer automatiquement
-        if (getGameMode() === "ai-ai") {
-            setTimeout(sendStateToAI, aiSpeed); // délai pour voir l'animation
+        // Relancer automatiquement pour les modes auto
+        const autoModes = ['ai-ai', 'ai-llm', 'llm-llm'];
+        if (autoModes.includes(mode)) {
+            setTimeout(sendStateToAI, aiSpeed);
         }
     })
     .catch(err => {

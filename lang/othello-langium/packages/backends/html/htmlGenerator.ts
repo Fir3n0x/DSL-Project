@@ -41,12 +41,14 @@ export function renderHTML(model: Game): string {
     <div style="margin: 1em 0;">
         <label><input type="radio" name="gameMode" value="human" checked> 👥 Humain vs Humain</label>
         <label><input type="radio" name="gameMode" value="ai"> 🤖 Humain vs IA</label>
-        <label><input type="radio" name="gameMode" value="ai-ai"> 🦾 IA vs IA</label>
         <label><input type="radio" name="gameMode" value="llm"> 🧠 Humain vs LLM</label>
+        <label><input type="radio" name="gameMode" value="ai-llm"> ⚔️ IA vs LLM</label>
+        <label><input type="radio" name="gameMode" value="ai-ai"> 🦾 IA vs IA</label>
+        <label><input type="radio" name="gameMode" value="llm-llm"> 🧠🧠 LLM vs LLM</label>
     </div>
 
     <div class="speed-slider">
-        <label for="aiSpeed">⏱️ Vitesse de l'IA</label>
+        <label for="aiSpeed">⏱️ Vitesse de jeu</label>
         <input type="range" id="aiSpeed" min="100" max="2000" value="500" step="100" autocomplete="off">
         <div class="speed-value">
             Délai: <span id="speedDisplay">500</span> ms
@@ -98,7 +100,7 @@ export function renderHTML(model: Game): string {
     for (let r = 1; r <= rows; r++) {
         html += '\n        <tr>';
         for (let c = 1; c <= cols; c++) {
-            // Calcul de la distance pour le “cercle Minecraft”
+            // Calcul de la distance pour le "cercle Minecraft"
             const dx = c - (cols + 1) / 2;
             const dy = r - (rows + 1) / 2;
             const distance = Math.sqrt(dx * dx + dy * dy);
