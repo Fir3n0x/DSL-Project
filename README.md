@@ -187,10 +187,20 @@ Two representative variants are evaluated:
 * **Classic 8×8 board**
 * **Circular 8×8 board**
 
-| Variant      | Mode         | Depth / Model      | Result                   |
-| ------------ | ------------ | ------------------ | ------------------------ |
-| 8×8 Classic  | AI vs AI     | Minimax d=4 vs d=6 | d=6 consistently wins    |
-| Circular 8×8 | Human vs LLM | GPT‑4o             |  à modifier!!!!!!!!!!!!!!!!!!!!! |
+
+| Variant      | Mode         | Depth / Model         | Result                                                                    |
+| ------------ | ------------ | --------------------- | ------------------------------------------------------------------------- |
+| 8×8 Classic  | AI vs AI     | Minimax d=4 vs d=6    | The deeper AI (d=6) consistently wins, showing clear strategic advantage  |
+| 8×8 Classic  | AI vs AI     | Minimax d=1 vs d=6    | Large skill gap: d=6 dominates almost every game                          |
+| 8×8 Classic  | Human vs AI  | Human vs Minimax d=4  | AI usually wins against non-expert players                                |
+| 8×8 Classic  | Human vs AI  | Human vs Minimax d=6  | AI strongly dominates; difficult for humans to compete                    |
+| 8×8 Classic  | AI vs LLM    | Minimax d=4 vs GPT-4o | GPT-4o often outperforms Minimax thanks to higher-level strategic choices |
+| 8×8 Classic  | AI vs LLM    | Minimax d=6 vs GPT-4o | GPT-4o still wins several games despite occasional illegal move attempts  |
+| Circular 8×8 | Human vs LLM | GPT-4o                | Engaging gameplay with clear explanations; some illegal moves proposed    |
+| Circular 8×8 | Human vs AI  | Human vs Minimax d=4  | Balanced games; board geometry increases human chances                    |
+| Circular 8×8 | AI vs AI     | Minimax d=4 vs d=6    | d=6 still wins, but with reduced margin due to board irregularity         |
+
+**Observation:** during our experiments, the fact that the LLM (GPT-4o) was able to defeat Minimax-based AIs, even at higher depths (d=6) was unexpected. This highlights the potential of LLMs to capture global, long-term strategic patterns that are sometimes missed by depth-limited search algorithms, despite their lack of formal guarantees.
 
 **Reproduction:** run the backend server and select the corresponding variant and mode from the UI.
 
