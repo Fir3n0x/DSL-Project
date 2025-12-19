@@ -78,6 +78,7 @@ All configurations are available on the web user interface.
 ./model/metamodel.puml
 ./lang/othello-langium/packages/language/src/othello.langium
 ---
+```
 
 ## 5 - AIs (rule/heuristic/LLM)
 
