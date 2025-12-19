@@ -141,12 +141,6 @@ The PlantUML file provides a class diagram describing the core concepts (Board, 
 
 - **LLM vs Minimax:** LLMs excel at producing natural-language explanations and intuitive reasoning, but they do not guarantee rule compliance and may suggest illegal moves. Minimax remains the formal backbone that guarantees legality and short-horizon optimality.
 
-#### 5.3.3 Implementation Recommendations
-
-- **Strict validation of LLM moves:** every LLM proposal must pass the rule validator before being applied.
-- **Hybrid approach:** use the LLM for explanations and Minimax for validation/execution to combine interpretability with correctness.
-- **Exposed parameters:** make depth limits and timeouts configurable in the UI, with safe defaults (depth = 6, AI timeout ≈ 3s).
-- **Optimizations:** implement alpha-beta pruning, transposition tables, move ordering, and iterative deepening to improve strength without increasing raw depth.
 
 ---
 
