@@ -94,17 +94,17 @@ All configurations are available on the web user interface.
 
 ## 8 - Unsupported features / limitations
 
-** Board types beyond square/circle not supported.
-** Complex multi-player games not handled.
-** LLM AI can occasionally propose illegal moves.
+* Board types beyond square/circle not supported.
+* Complex multi-player games not handled.
+* LLM AI can occasionally propose illegal moves.
 
 ---
 
 ## 9 - Lessons learned
 
-** Langium simplifies DSL parsing and validation.
-** LLM integration requires careful move validation.
-** Designing a mapping between logical board and DOM is critical for non-rectangular boards.
+* Langium simplifies DSL parsing and validation.
+* LLM integration requires careful move validation.
+* Designing a mapping between logical board and DOM is critical for non-rectangular boards.
 
 ---
 
