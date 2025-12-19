@@ -1,7 +1,8 @@
 # DSL OTHELLO
 
-## 1 -Project Overview
-This project is a Domain-Specific Language (DSL) built with **Langium**. It allows users to generate and play games in different modes, including Human vs Human, Human vs AI, AI vs AI and Human vs LLM. The system supports both visual (HTML/JS) and headless evaluation modes. The DSL programs define game rules, initial board setups, and AI strategies. This project demonstrates the integration of language engineering, AI reasoning, and interactive gameplay.
+## 1 - Project Overview
+
+This project is a Domain-Specific Language (DSL) built with **Langium** for specifying and generating Othello-like games and their associated AI players. It supports multiple board topologies, several gameplay variants, and different play modes ranging from human-only matches to AI- and LLM-driven games. The system can be executed either visually (HTML/JS frontend). A strong emphasis is put on combining classical algorithmic AI with modern LLM-based agents. Overall, the project showcases language engineering, game modeling, and AI integration within a single framework.
 
 ![Screenshot home project](./media/home.png)
 ![Screenshot variant 1 project](./media/variant1.png)
@@ -10,7 +11,8 @@ This project is a Domain-Specific Language (DSL) built with **Langium**. It allo
 ---
 
 ## 2 - Representative DSL Programs
-Here are a few examples of DSL programs and what they do:
+
+Below are representative DSL snippets illustrating how games and variants are defined.
 
 ```dsl
 # Example 1: Standard 8x8 Othello game
@@ -28,7 +30,8 @@ rules {
   scoring: count_pieces
 }
 ```
-*Explanation*: This program initializes a standard Othello board and sets the move and scoring rules.
+
+**Explanation:** Defines a classic 8×8 Othello board with the standard initial configuration and scoring based on the number of discs.
 
 ```dsl
 # Example 2: Custom circular board
@@ -40,20 +43,21 @@ initial {
   }
 }
 ```
-*Explanation*: This program generates a circular board variant where only cells within the radius are playable.
+
+**Explanation:** Defines a circular board variant where only the cells inside the given radius are playable, demonstrating non-rectangular board support.
 
 ---
 
-## 3 - How to run
+## 3 - How to Run
 
-1. Install dependencies
+### 3.1 Installation
 
 ```bash
 cd lang/othello-langium/
 npm install
 ```
 
-2. Generation and build
+### 3.2 Generate and Build
 
 ```bash
 npm run langium:generate
@@ -61,98 +65,154 @@ npm run build
 npm run test
 ```
 
-Running the tests will also generate all the different variants in `examples/`.
+Running the tests also generates all predefined variants in the `examples/` directory.
 
-2. Run games
+### 3.3 Play the Game
 
 ```bash
 python3 packages/backends/server/server.py
 ```
-Browse given link to access games and variants.
-All configurations are available on the web user interface.
 
-3. Environment Variables
+Open the provided URL in a browser to access the UI. From there you can run:
 
-*OPENROUTER_API_KEY* required for LLM integration. This key must be written in a `.env` file at the root of the `lang/othello-langium/` folder.
+* Human vs Human
+* Human vs AI (Minimax)
+* AI vs AI (Minimax vs Minimax)
+* Human vs LLM (GPT‑4o)
+* LLM vs AI / LLM vs LLM (experimental)
+
+
+### 3.4 Environment Variables
+
+* **OPENROUTER_API_KEY**: required for LLM integration. Must be defined in a `.env` file at the root of `lang/othello-langium/`.
 
 ---
 
-## 4 - Grammar & metamodel
+## 4 - Grammar & Metamodel
 
-```bash
+The DSL grammar and metamodel define boards, rules, initial states, and variants.
+
+```text
 ./model/metamodel.puml
 ./lang/othello-langium/packages/language/src/othello.langium
 ```
 
----
-
-## 5 - AIs (rule/heuristic/LLM)
-
-### 1. Minimax (Algorithmic)
-- Implementation: Standard Minimax algorithm with fixed depth (2 or 3 depending on board size).
-
-- Strengths: Fast, rules-compliant, plays strategically optimal moves for short horizons.
-
-- Weaknesses: Horizon effect, predictable.
-
-### 2. LLM Agent (OpenRouter/GPT-4o)
-- Implementation: Sends the board state as an ASCII string to an LLM via OpenRouter.
-
-- Strengths: Can "reason" about the board, provides textual explanations for moves.
-
-- Weaknesses: Slower, occasional "hallucinations" (illegal moves), cost per token.
-
-- Failure Handling: If the LLM proposes an illegal move, the system rejects it and falls back to Minimax (hybrid approach).
+The PlantUML file provides a class diagram describing the core concepts (Board, Cell, Rule, Game, Variant) and their relationships.
 
 ---
 
-## 6 - LLM protocol
+## 5 - AIs (Rule-based / Heuristic / LLM)
 
-To ensure consistent gameplay, we use a strict protocol for LLM communication.
+### 5.1 Minimax (Algorithmic AI)
 
-### Input Context:
+* **Implementation:** Standard Minimax with alpha-beta pruning and fixed depth.
+* **Strengths:** Deterministic, rules-compliant, strong short-horizon play.
+* **Weaknesses:** Horizon effect, predictable behavior, exponential cost with depth.
+* **Known failure modes:** Poor long-term planning when depth is too limited; evaluation-function bias.
 
-- System Prompt: "You are an expert Othello player..."
+### 5.2 LLM Agent (GPT-4o via OpenRouter)
 
-- Board Representation: ASCII Grid.
+* **Implementation:** Sends an ASCII representation of the board and legal moves to the LLM.
+* **Strengths:** Natural-language explanations, high-level strategic intuition.
+* **Weaknesses:** Slower, token cost, non-deterministic.
+* **Known failure modes:** May hallucinate illegal moves or misinterpret board coordinates.
 
-- Legal Moves: List of algebraic coordinates (e.g. [C3, D4]).
+### 5.3 AI Depth Limitation and In-depth Reflection
 
-### Output Schema (JSON):
+#### 5.3.1 Depth Limitation
+
+- **Design choice:** the search depth is capped at 6 to avoid excessive response times (exponential tree growth, increased memory usage for transposition tables). This value represents a practical compromise: it allows meaningful strategic play while keeping the game responsive.
+- **Observed behavior:** higher depth generally improves move quality through brute-force search, but latency increases sharply. On modest hardware, depths greater than 6 can make the AI unusable in interactive modes.
+
+#### 5.3.2 In-depth Reflection: AI and Othello
+
+- **Finite game:** Othello on an 8×8 board is a **finite game**. The number of possible states is bounded (each cell has a finite number of states), and every game necessarily ends when no legal moves remain or the board is full. In theory, the entire game tree could be explored, and a *perfect strategy* exists that fixes the outcome if both players play optimally. In practice, this exhaustive computation is limited by combinatorial explosion.
+
+- **Practical complexity:** although finite, the state space and move tree are extremely large. Complexity depends mainly on the branching factor (average number of legal moves) and remaining depth (number of moves until the end). Classical techniques such as alpha-beta pruning, transposition tables, heuristic evaluation functions, move ordering, and iterative deepening significantly reduce the effective search space.
+
+- **Endgame and tablebases:** in the final phase of the game (few moves remaining), it becomes feasible to compute the exact outcome at a reasonable cost. This is the idea behind *endgame tablebases*. Strong Othello engines typically combine heuristics for opening/midgame play with near-exhaustive or exhaustive search in the endgame.
+
+- **Implications for this project:** for the standard 8×8 board, a competitive AI can be built using:
+
+  - a well-designed evaluation function (corners, stable discs, mobility, parity, edge safety),
+  - alpha-beta pruning with move ordering and transposition tables,
+  - a limited search depth suitable for real-time interaction,
+  - optionally, a hybrid approach where an LLM provides explanations while Minimax ensures correctness and execution.
+
+- **LLM vs Minimax:** LLMs excel at producing natural-language explanations and intuitive reasoning, but they do not guarantee rule compliance and may suggest illegal moves. Minimax remains the formal backbone that guarantees legality and short-horizon optimality.
+
+#### 5.3.3 Implementation Recommendations
+
+- **Strict validation of LLM moves:** every LLM proposal must pass the rule validator before being applied.
+- **Hybrid approach:** use the LLM for explanations and Minimax for validation/execution to combine interpretability with correctness.
+- **Exposed parameters:** make depth limits and timeouts configurable in the UI, with safe defaults (depth = 6, AI timeout ≈ 3s).
+- **Optimizations:** implement alpha-beta pruning, transposition tables, move ordering, and iterative deepening to improve strength without increasing raw depth.
+
+---
+
+## 6 - LLM Protocol
+
+### 6.1 Input Context
+
+* System prompt: *"You are an expert Othello player…"*
+* Board state: ASCII grid
+* Legal moves: explicit list of allowed coordinates
+
+### 6.2 Output JSON Schema
+
 ```json
 {
-  "reasoning": "Placing here flips the diagonal line...",
+  "reasoning": "Placing here flips the diagonal line…",
   "move": "C3"
 }
 ```
 
-The logs of all LLM interactions are saved in `lang/othello-langium/packages/backends/llm/data/eval/logs/`.
 
-### Reproducibility:
+### 6.3 Repair Policy
 
-- Model: openai/gpt-4o
+All moves proposed by the LLM are validated by the rules engine:
 
-- Temperature: 0.2 (Low randomness for stability)
+* If the move is legal → applied.
+* If illegal → rejected and either re-requested from the LLM or replaced by a Minimax move (hybrid fallback).
 
-- Seed: Optional (for testing).
+### 6.4 Reproducibility Parameters
+
+* Model: `openai/gpt-4o`
+* Temperature: `0.2`
+* Max tokens: configurable
+* Seed: optional (used for testing)
+
+All interactions are logged in `packages/backends/llm/data/eval/logs/`.
 
 ---
 
-## 7 - Mini-evaluation
+## 7 - Mini-Evaluation
+
+Two representative variants are evaluated:
+
+* **Classic 8×8 board**
+* **Circular 8×8 board**
+
+| Variant      | Mode         | Depth / Model      | Result                   |
+| ------------ | ------------ | ------------------ | ------------------------ |
+| 8×8 Classic  | AI vs AI     | Minimax d=4 vs d=6 | d=6 consistently wins    |
+| Circular 8×8 | Human vs LLM | GPT‑4o             |  à modifier!!!!!!!!!!!!!!!!!!!!! |
+
+**Reproduction:** run the backend server and select the corresponding variant and mode from the UI.
 
 ---
 
-## 8 - Unsupported features / limitations
+## 8 - Unsupported Features / Limitations
 
-* Board types beyond square/circle not supported.
-* Complex multi-player games not handled.
-* LLM AI can occasionally propose illegal moves.
+* Board shapes beyond square and circle are not supported.
+* No multi-player (>2 players) support.
+* LLM agents can propose illegal moves.
 * Only standard "no moves left" or "board full" conditions are robustly supported.
-* Waiting for the API response can take 2-5 seconds, which breaks the flow of fast-paced games.
+* LLM latency (2–5s) disrupts fast-paced gameplay.
 
 ---
 
-## 9 - Lessons learned
+## 9 - Lessons Learned
 
 * Langium simplifies DSL parsing and validation.
 * LLM integration requires careful move validation.
@@ -163,12 +223,12 @@ The logs of all LLM interactions are saved in `lang/othello-langium/packages/bac
 
 ## 10 - Resources
 
-```bash
+Additional documentation and previous work:
+
+```text
 ./Old-README/README.md
 ./docs/metamodel-vs-ast.md
 ./docs/services-notes.md
 ./docs/state-of-the-art.md
 ./docs/variability.md
 ```
-
----
