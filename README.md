@@ -4,12 +4,12 @@
 
 This project is a Domain-Specific Language (DSL) built with **Langium** for specifying and generating Othello-like games and their associated AI players. It supports multiple board topologies, several gameplay variants, and different play modes ranging from human-only matches to AI- and LLM-driven games. The system can be executed either visually (HTML/JS frontend). A strong emphasis is put on combining classical algorithmic AI with modern LLM-based agents. Overall, the project showcases language engineering, game modeling, and AI integration within a single framework.
 
-![Screenshot home project](./media/home.png)
 **Figure 1:** Home
-![Screenshot variant 1 project](./media/variant1.png)
+![Screenshot home project](./media/home.png)
 **Figure 2:** Variant 1
-![Screenshot variant 5 project](./media/variant5.png)
+![Screenshot variant 1 project](./media/variant1.png)
 **Figure 3:** Variant 5
+![Screenshot variant 5 project](./media/variant5.png)
 
 ---
 
