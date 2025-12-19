@@ -90,11 +90,22 @@ Open the provided URL in a browser to access the UI. From there you can run:
 
 ## 4 - Grammar & Metamodel
 
+<<<<<<< Updated upstream
 The DSL grammar and metamodel define boards, rules, initial states, and variants.
 
 ```text
-./model/metamodel.puml
+=======
+You can find our grammar and metamodel (class diagram) below : 
+
+* Grammar
+```bash
 ./lang/othello-langium/packages/language/src/othello.langium
+```
+
+* Metamodel
+```bash
+>>>>>>> Stashed changes
+./model/metamodel.puml
 ```
 
 The PlantUML file provides a class diagram describing the core concepts (Board, Cell, Rule, Game, Variant) and their relationships.
@@ -227,12 +238,34 @@ Two representative variants are evaluated:
 
 ## 10 - Resources
 
+<<<<<<< Updated upstream
 Additional documentation and previous work:
 
 ```text
 ./Old-README/README.md
+=======
+Additional resources for the project, including documentation, notes, and previous READMEs (previous practical works), are also available below.
+
+```bash
+./old-readme/README.md
+>>>>>>> Stashed changes
 ./docs/metamodel-vs-ast.md
 ./docs/services-notes.md
 ./docs/state-of-the-art.md
 ./docs/variability.md
 ```
+<<<<<<< Updated upstream
+=======
+
+---
+
+## Author
+
+**Corentin Mahieu** – [@Fir3n0x](https://github.com/Fir3n0x)
+
+**Tom Lafay** – [@TomLafay ](https://github.com/TomLafay )
+
+**Kelian Ninet** – [@S0nju](https://github.com/S0nju)
+
+**Thibault Dufourcq** – [@costelo64](https://github.com/costelo64)
+>>>>>>> Stashed changes
