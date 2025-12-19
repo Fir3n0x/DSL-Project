@@ -6,7 +6,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../llm'))
 try:
     from openrouter_client import OpenRouterClient
 except ImportError:
-    print("Warning: 'openrouter_client.py' non trouvé. Le mode LLM ne fonctionnera pas.")
+    print("Warning: 'openrouter_client.py' not found. LLM mode will not work.")
     OpenRouterClient = None
 
 # =================
@@ -150,7 +150,7 @@ def to_algebraic(r, c):
 # Interroge le LLM
 def get_llm_move(board, player, config):
     if not OpenRouterClient:
-        print("Erreur: OpenRouterClient non disponible.")
+        print("Error: OpenRouterClient not available.")
         return None
 
     # Calculer les coups valides pour guider le LLM
@@ -166,30 +166,30 @@ def get_llm_move(board, player, config):
     player_name = "NOIR (B)" if player == "black" else "BLANC (W)"
     
     system_prompt = f"""
-    Tu es un expert du jeu Othello. Tu joues les {player_name}.
+    You are an expert Othello player. You are playing as {player_name}.
     
-    RÈGLES :
-    - Plateau : {config.get('rows')} lignes x {config.get('cols')} colonnes.
-    - Tu dois capturer des pions adverses en les encadrant.
-    - IMPORTANT : Tu ne peux jouer que sur l'une des cases suivantes : [{valid_moves_str}].
+    RULES:
+    - Board: {config.get('rows')} rows x {config.get('cols')} columns.
+    - You must capture opponent pieces by flanking them.
+    - IMPORTANT: You can only play on one of the following squares: [{valid_moves_str}].
     
-    FORMAT DE RÉPONSE (JSON STRICT) :
+    RESPONSE FORMAT (STRICT JSON):
     {{
-        "reasoning": "Explication courte...",
+        "reasoning": "Short explanation of your strategy...",
         "move": "C3"
     }}
-    Choisis le meilleur coup parmi la liste fournie.
+    Choose the best move from the provided list.
     """
     
     user_prompt = f"""
-    État actuel :
+    Current state:
     {board_str}
     
-    Coups légaux possibles : {valid_moves_str}
-    Quel est le meilleur coup ?
+    Possible legal moves: {valid_moves_str}
+    What is the best move?
     """
 
-    print(f"--- [LLM] Réflexion en cours pour {player} (Choix: {valid_moves_str}) ---")
+    print(f"--- [LLM] Thinking for {player} (Choices: {valid_moves_str}) ---")
     try:
         _, json_resp, _ = client.chat([
             {"role": "system", "content": system_prompt},
@@ -204,12 +204,12 @@ def get_llm_move(board, player, config):
             if parsed_move:
                 move_tuple = (parsed_move[0], parsed_move[1])
                 if move_tuple in valid_moves:
-                    print(f"--- [LLM] Coup validé : {move_str} ({json_resp.get('reasoning')}) ---")
+                    print(f"--- [LLM] Move validated: {move_str} ({json_resp.get('reasoning')}) ---")
                     return parsed_move
                 else:
-                    print(f"--- [LLM] Coup illégal rejeté : {move_str}. Repli sur Minimax. ---")
+                    print(f"--- [LLM] Illegal move rejected: {move_str}. Falling back to Minimax. ---")
             
     except Exception as e:
-        print(f"--- [LLM] Erreur : {e} ---")
+        print(f"--- [LLM] Error: {e} ---")
         
     return None

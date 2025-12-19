@@ -47,7 +47,7 @@ def start_game():
     if not LOGGING_ENABLED:
         return jsonify({
             'status': 'disabled',
-            'message': 'Logging non disponible'
+            'message': 'Logging not available'
         })
     
     try:
@@ -57,15 +57,15 @@ def start_game():
         # Réinitialiser la session (termine l'ancienne si elle existe et en crée une nouvelle)
         new_session = reset_game()
         
-        print(f"Nouvelle session démarrée : {new_session.session_id} (mode: {game_mode})")
-        
+        print(f"New session started: {new_session.session_id} (mode: {game_mode})") 
+
         return jsonify({
             'status': 'success',
             'session_id': new_session.session_id,
-            'message': f'Nouvelle partie démarrée (mode: {game_mode})'
+            'message': f'New game started (mode: {game_mode})'
         })
     except Exception as e:
-        print(f"Erreur start_game: {e}")
+        print(f"Error start_game: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
@@ -78,7 +78,7 @@ def end_game():
     if not LOGGING_ENABLED:
         return jsonify({
             'status': 'disabled',
-            'message': 'Logging non disponible'
+            'message': 'Logging not available'
         })
     
     try:
@@ -89,20 +89,20 @@ def end_game():
         log_path = end_game_session(winner=winner, final_scores=final_scores)
         
         if log_path:
-            print(f"Partie terminée et sauvegardée : {log_path}")
+            print(f"Game finished and saved: {log_path}")
             return jsonify({
                 'status': 'success',
                 'log_path': log_path,
-                'message': 'Partie terminée et sauvegardée'
+                'message': 'Game finished and saved'
             })
         else:
             return jsonify({
                 'status': 'warning',
-                'message': 'Aucune session active à terminer'
+                'message': 'No active session to end'
             })
-            
+
     except Exception as e:
-        print(f"Erreur end_game: {e}")
+        print(f"Error end_game: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @app.route("/move", methods=["POST"])
@@ -120,15 +120,15 @@ def move():
         board = data.get("board")
         player = data.get("player")
         ai_type = data.get("aiType", "minimax")
-        depth = data.get("depth", 3)  # Récupérer la profondeur
+        depth = data.get("depth", 3)
         config = data.get("config", {})
 
-        print(f"Demande de coup : {player} | Mode : {ai_type} | Depth : {depth} | Config : {config}")
+        print(f"Move request: {player} | Mode: {ai_type} | Depth: {depth} | Config: {config}")
 
         # Si c'est un coup du LLM et qu'aucune session n'est active, en créer une
         if ai_type == "llm" and LOGGING_ENABLED:
             if get_current_session() is None:
-                print("Aucune session active, création automatique d'une nouvelle session")
+                print("No active session, automatically creating a new session")
                 start_game_session(game_mode="human_vs_llm")
 
         best_move = None
@@ -140,7 +140,7 @@ def move():
             
             # Si le LLM échoue (erreur API ou réponse invalide), on se replie sur Minimax
             if best_move is None:
-                print("Le LLM n'a pas renvoyé de coup valide. Repli sur Minimax.")
+                print("LLM did not return a valid move. Fallback to Minimax.")
                 best_move = get_minimax_move(board, player, depth)
         else:
             best_move = get_minimax_move(board, player, depth)
@@ -155,14 +155,14 @@ def move():
         })
 
     except Exception as e:
-        print(f"ERREUR SERVEUR : {e}")
+        print(f"SERVER ERROR: {e}")
         return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":
-    print("Démarrage du serveur Flask...")
+    print("Starting Flask server...")
     if LOGGING_ENABLED:
-        print("Logging LLM activé")
+        print("LLM Logging enabled")
     else:
-        print("Logging LLM désactivé")
+        print("LLM Logging disabled")
     app.run(debug=True)

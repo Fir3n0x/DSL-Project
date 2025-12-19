@@ -2,7 +2,7 @@
 
 ## 1 - Project Overview
 
-This project is a Domain-Specific Language (DSL) built with **Langium** for specifying and generating Othello-like games and their associated AI players. It supports multiple board topologies, several gameplay variants, and different play modes ranging from human-only matches to AI- and LLM-driven games. The system can be executed either visually (HTML/JS frontend). A strong emphasis is put on combining classical algorithmic AI with modern LLM-based agents. Overall, the project showcases language engineering, game modeling, and AI integration within a single framework.
+This project is a Domain-Specific Language (DSL) built with **Langium** for specifying and generating Othello-like games and their associated AI players. It supports multiple board topologies, several gameplay variants, and different play modes ranging from human-only matches to AI and LLM-driven games. The system can be executed either visually (HTML/JS frontend). A strong emphasis is put on combining classical algorithmic AI with modern LLM-based agents. Overall, the project showcases language engineering, game modeling, and AI integration within a single framework.
 
 **Figure 1:** Home
 ![Screenshot home project](./media/home.png)
@@ -112,7 +112,7 @@ Open the provided URL in a browser to access the UI. From there you can run:
 * Human vs AI (Minimax)
 * AI vs AI (Minimax vs Minimax)
 * Human vs LLM (GPT‑4o)
-* LLM vs AI / LLM vs LLM (experimental)
+* LLM vs AI / LLM vs LLM (GPT‑4o vs Minimax / GPT‑4o vs GPT‑4o)
 
 
 ### 3.4 Environment Variables
@@ -160,18 +160,18 @@ The PlantUML file provides a class diagram describing the core concepts (Board, 
 
 #### 5.3.1 Depth Limitation
 
-- **Design choice:** the search depth is capped at 6 to avoid excessive response times (exponential tree growth, increased memory usage for transposition tables). This value represents a practical compromise: it allows meaningful strategic play while keeping the game responsive.
-- **Observed behavior:** higher depth generally improves move quality through brute-force search, but latency increases sharply. On modest hardware, depths greater than 6 can make the AI unusable in interactive modes.
+- **Design choice:** The search depth is capped at 6 to avoid excessive response times (exponential tree growth, increased memory usage for transposition tables). This value represents a practical compromise: it allows meaningful strategic play while keeping the game responsive.
+- **Observed behavior:** Higher depth generally improves move quality through brute-force search, but latency increases sharply. On modest hardware, depths greater than 6 can make the AI unusable in interactive modes.
 
 #### 5.3.2 In-depth Reflection: AI and Othello
 
 - **Finite game:** Othello on an 8×8 board is a **finite game**. The number of possible states is bounded (each cell has a finite number of states), and every game necessarily ends when no legal moves remain or the board is full. In theory, the entire game tree could be explored, and a *perfect strategy* exists that fixes the outcome if both players play optimally. In practice, this exhaustive computation is limited by combinatorial explosion.
 
-- **Practical complexity:** although finite, the state space and move tree are extremely large. Complexity depends mainly on the branching factor (average number of legal moves) and remaining depth (number of moves until the end). Classical techniques such as alpha-beta pruning, transposition tables, heuristic evaluation functions, move ordering, and iterative deepening significantly reduce the effective search space.
+- **Practical complexity:** Although finite, the state space and move tree are extremely large. Complexity depends mainly on the branching factor (average number of legal moves) and remaining depth (number of moves until the end). Classical techniques such as alpha-beta pruning, transposition tables, heuristic evaluation functions, move ordering, and iterative deepening significantly reduce the effective search space.
 
-- **Endgame and tablebases:** in the final phase of the game (few moves remaining), it becomes feasible to compute the exact outcome at a reasonable cost. This is the idea behind *endgame tablebases*. Strong Othello engines typically combine heuristics for opening/midgame play with near-exhaustive or exhaustive search in the endgame.
+- **Endgame and tablebases:** In the final phase of the game (few moves remaining), it becomes feasible to compute the exact outcome at a reasonable cost. This is the idea behind *endgame tablebases*. Strong Othello engines typically combine heuristics for opening/midgame play with near-exhaustive or exhaustive search in the endgame.
 
-- **Implications for this project:** for the standard 8×8 board, a competitive AI can be built using:
+- **Implications for this project:** For the standard 8×8 board, a competitive AI can be built using:
 
   - a well-designed evaluation function (corners, stable discs, mobility, parity, edge safety),
   - alpha-beta pruning with move ordering and transposition tables,
@@ -187,26 +187,42 @@ The PlantUML file provides a class diagram describing the core concepts (Board, 
 
 ### 6.1 Input Context
 
-* System prompt: *"You are an expert Othello player…"*
-* Board state: ASCII grid
-* Legal moves: explicit list of allowed coordinates
-
-### 6.2 Output JSON Schema
-
-```json
-{
-  "reasoning": "Placing here flips the diagonal line…",
-  "move": "C3"
-}
+* System prompt:
+```
+You are an expert Othello player. You are playing as {player_name}.
+    
+    RULES:
+    - Board: {config.get('rows')} rows x {config.get('cols')} columns.
+    - You must capture opponent pieces by flanking them.
+    - IMPORTANT: You can only play on one of the following squares: [{valid_moves_str}].
+    
+    RESPONSE FORMAT (STRICT JSON):
+    {{
+        "reasoning": "Short explanation of your strategy...",
+        "move": "C3"
+    }}
+    Choose the best move from the provided list.
 ```
 
+- Board Representation: ASCII Grid.
+
+- Legal Moves: List of algebraic coordinates (e.g., [C3, D4]).
+
+- User prompt :
+```
+    Current state:
+    {board_str}
+    
+    Possible legal moves: {valid_moves_str}
+    What is the best move?
+```
 
 ### 6.3 Repair Policy
 
 All moves proposed by the LLM are validated by the rules engine:
 
 * If the move is legal → applied.
-* If illegal → rejected and either re-requested from the LLM or replaced by a Minimax move (hybrid fallback).
+* If illegal → rejected and replaced by a Minimax move.
 
 ### 6.4 Reproducibility Parameters
 
@@ -239,9 +255,9 @@ Two representative variants are evaluated:
 | Circular 8×8 | Human vs AI  | Human vs Minimax d=4  | Balanced games; board geometry increases human chances                    |
 | Circular 8×8 | AI vs AI     | Minimax d=4 vs d=6    | d=6 still wins, but with reduced margin due to board irregularity         |
 
-**Observation:** during our experiments, the fact that the LLM (GPT-4o) was able to defeat Minimax-based AIs, even at higher depths (d=6) was unexpected. This highlights the potential of LLMs to capture global, long-term strategic patterns that are sometimes missed by depth-limited search algorithms, despite their lack of formal guarantees.
+**Observation:** During our experiments, the fact that the LLM (GPT-4o) was able to defeat Minimax-based AIs, even at higher depths (d=6) was unexpected. This highlights the potential of LLMs to capture global, long-term strategic patterns that are sometimes missed by depth-limited search algorithms, despite their lack of formal guarantees.
 
-**Reproduction:** run the backend server and select the corresponding variant and mode from the UI.
+**Reproduction:** Run the backend server and select the corresponding variant and mode from the UI.
 
 ---
 
