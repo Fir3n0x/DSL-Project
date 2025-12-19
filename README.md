@@ -279,7 +279,7 @@ Additional resources for the project, including documentation, notes, and previo
 
 ---
 
-## Author
+## Authors
 
 **Corentin Mahieu** – [@Fir3n0x](https://github.com/Fir3n0x)
 
