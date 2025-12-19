@@ -19,18 +19,30 @@ Below are representative DSL snippets illustrating how games and variants are de
 
 ```dsl
 # Example 1: Standard 8x8 Othello game
-board 8x8
-initial {
-  cells {
-    (4,4) white
-    (4,5) black
-    (5,4) black
-    (5,5) white
-  }
+board 8 x 8
+
+compile-time {
+    boardType = "square"
+    scoreGoal = "max"
+    allowDiagonal = true
+    initialPosition = "static"
 }
+
+initial {
+    cell position(4,4) = white
+    cell position(5,5) = white
+    cell position(4,5) = black
+    cell position(5,4) = black
+}
+
 rules {
-  move: placement
-  scoring: count_pieces
+    move {
+        type placement
+        valid if captures_in_any_direction(r,c)
+        effect flip_captured_pieces(r,c)
+    }
+    end when captures_in_any_direction(r,c)
+    scoring count_pieces_per_player
 }
 ```
 
@@ -38,16 +50,34 @@ rules {
 
 ```dsl
 # Example 2: Custom circular board
-board circle radius 4
+board 8 x 8
+
+compile-time {
+    boardType = "circle"
+    scoreGoal = "max"
+    allowDiagonal = true
+    initialPosition = "dynamic"
+}
+
 initial {
-  cells {
-    (2,3) black
-    (3,4) white
-  }
+    cell position(4,4) = white
+    cell position(5,5) = white
+    cell position(4,5) = black
+    cell position(5,4) = black
+}
+
+rules {
+    move {
+        type placement
+        valid if captures_in_any_direction(r,c)
+        effect flip_captured_pieces(r,c)
+    }
+    end when captures_in_any_direction(r,c)
+    scoring count_pieces_per_player
 }
 ```
 
-**Explanation:** Defines a circular board variant where only the cells inside the given radius are playable, demonstrating non-rectangular board support.
+**Explanation:** Defines a circular board variant where only the cells inside the circle are playable, demonstrating non-rectangular board support.
 
 ---
 
