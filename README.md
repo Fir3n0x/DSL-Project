@@ -5,8 +5,11 @@
 This project is a Domain-Specific Language (DSL) built with **Langium** for specifying and generating Othello-like games and their associated AI players. It supports multiple board topologies, several gameplay variants, and different play modes ranging from human-only matches to AI- and LLM-driven games. The system can be executed either visually (HTML/JS frontend). A strong emphasis is put on combining classical algorithmic AI with modern LLM-based agents. Overall, the project showcases language engineering, game modeling, and AI integration within a single framework.
 
 ![Screenshot home project](./media/home.png)
+**Figure 1:** Home
 ![Screenshot variant 1 project](./media/variant1.png)
+**Figure 2:** Variant 1
 ![Screenshot variant 5 project](./media/variant5.png)
+**Figure 3:** Variant 5
 
 ---
 
@@ -90,11 +93,7 @@ Open the provided URL in a browser to access the UI. From there you can run:
 
 ## 4 - Grammar & Metamodel
 
-<<<<<<< Updated upstream
 The DSL grammar and metamodel define boards, rules, initial states, and variants.
-
-```text
-=======
 You can find our grammar and metamodel (class diagram) below : 
 
 * Grammar
@@ -104,7 +103,6 @@ You can find our grammar and metamodel (class diagram) below :
 
 * Metamodel
 ```bash
->>>>>>> Stashed changes
 ./model/metamodel.puml
 ```
 
@@ -238,24 +236,16 @@ Two representative variants are evaluated:
 
 ## 10 - Resources
 
-<<<<<<< Updated upstream
-Additional documentation and previous work:
 
-```text
-./Old-README/README.md
-=======
 Additional resources for the project, including documentation, notes, and previous READMEs (previous practical works), are also available below.
 
 ```bash
 ./old-readme/README.md
->>>>>>> Stashed changes
 ./docs/metamodel-vs-ast.md
 ./docs/services-notes.md
 ./docs/state-of-the-art.md
 ./docs/variability.md
 ```
-<<<<<<< Updated upstream
-=======
 
 ---
 
@@ -268,4 +258,3 @@ Additional resources for the project, including documentation, notes, and previo
 **Kelian Ninet** – [@S0nju](https://github.com/S0nju)
 
 **Thibault Dufourcq** – [@costelo64](https://github.com/costelo64)
->>>>>>> Stashed changes
