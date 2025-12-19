@@ -16,7 +16,7 @@ class GameSession:
     """Représente une partie complète avec tous ses logs"""
     
     def __init__(self):
-        self.session_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")  # Ajout des microsecondes pour unicité
+        self.session_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
         self.start_time = datetime.now().isoformat()
         self.interactions = []
         self.game_metadata = {
@@ -27,7 +27,6 @@ class GameSession:
         }
         self.file_path = LOG_DIR / f"game_{self.session_id}.json"
         
-        # Créer le fichier immédiatement avec les données initiales
         self._save_initial()
         
     def _save_initial(self):
@@ -44,7 +43,7 @@ class GameSession:
         with open(self.file_path, "w", encoding="utf-8") as f:
             json.dump(log_data, f, indent=2, ensure_ascii=False)
         
-        print(f"🎮 Nouvelle session créée : {self.file_path}")
+        print(f"Nouvelle session créée : {self.file_path}")
         
     def add_interaction(self, prompt, raw_response, final_json, params, latency):
         """Ajoute une interaction (un coup du LLM) à la session"""
@@ -86,7 +85,7 @@ class GameSession:
         """Finalise la session (appelé à la fin de la partie)"""
         self.game_metadata["total_moves"] = len(self.interactions)
         file_path = self.save()
-        print(f"📊 Session de jeu terminée et sauvegardée : {file_path}")
+        print(f"Session de jeu terminée et sauvegardée : {file_path}")
         return file_path
 
 
@@ -104,7 +103,7 @@ def start_game_session(game_mode=None):
     
     # Si une session est déjà active, la terminer proprement
     if _current_game_session is not None:
-        print("⚠️  Session précédente détectée, fermeture automatique...")
+        print("Session précédente détectée, fermeture automatique...")
         end_game_session()
     
     # Créer la nouvelle session
@@ -115,7 +114,7 @@ def start_game_session(game_mode=None):
         _current_game_session.set_metadata(game_mode=game_mode)
         _current_game_session.save()
     
-    print(f"🎮 Nouvelle session démarrée : {_current_game_session.session_id}")
+    print(f"Nouvelle session démarrée : {_current_game_session.session_id}")
     return _current_game_session
 
 
@@ -133,7 +132,7 @@ def end_game_session(winner=None, final_scores=None):
     global _current_game_session
     
     if _current_game_session is None:
-        print("⚠️  Aucune session de jeu en cours")
+        print("Aucune session de jeu en cours")
         return None
     
     # Mettre à jour les métadonnées finales
@@ -169,7 +168,7 @@ def log_interaction(prompt, raw_response, final_json, params, latency):
     
     # Si aucune session n'est active, en créer une automatiquement
     if _current_game_session is None:
-        print("⚠️  Aucune session active, création automatique d'une nouvelle session")
+        print("Aucune session active, création automatique d'une nouvelle session")
         start_game_session()
     
     # Ajouter l'interaction (la sauvegarde est automatique)
@@ -194,7 +193,7 @@ def set_game_mode(mode):
     if _current_game_session:
         _current_game_session.set_metadata(game_mode=mode)
         _current_game_session.save()
-        print(f"🎯 Mode de jeu défini : {mode}")
+        print(f"Mode de jeu défini : {mode}")
 
 
 def reset_game():
@@ -214,7 +213,7 @@ def reset_game():
     
     # Terminer la session actuelle
     if _current_game_session is not None:
-        print("🔄 Réinitialisation de la partie...")
+        print("Réinitialisation de la partie...")
         end_game_session()
     
     # Créer une nouvelle session avec le même mode

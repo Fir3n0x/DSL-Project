@@ -1,7 +1,7 @@
 # DSL OTHELLO
 
 ## 1 -Project Overview
-This project is a Domain-Specific Language (DSL) built with **Langium**. It allows users to generate and play games in different modes, including Human vs AI, Human vs LLM, and AI/LLM vs AI/LLM. The system supports both visual (HTML/JS) and headless evaluation modes. The DSL programs define game rules, initial board setups, and AI strategies. This project demonstrates the integration of language engineering, AI reasoning, and interactive gameplay.
+This project is a Domain-Specific Language (DSL) built with **Langium**. It allows users to generate and play games in different modes, including Human vs Human, Human vs AI, AI vs AI and Human vs LLM. The system supports both visual (HTML/JS) and headless evaluation modes. The DSL programs define game rules, initial board setups, and AI strategies. This project demonstrates the integration of language engineering, AI reasoning, and interactive gameplay.
 
 ![Screenshot home project](./media/home.png)
 ![Screenshot variant 1 project](./media/variant1.png)
@@ -58,7 +58,10 @@ npm install
 ```bash
 npm run langium:generate
 npm run build
+npm run test
 ```
+
+Running the tests will also generate all the different variants in `examples/`.
 
 2. Run games
 
@@ -70,7 +73,7 @@ All configurations are available on the web user interface.
 
 3. Environment Variables
 
-*OPENROUTER_API_KEY* required for LLM integration.
+*OPENROUTER_API_KEY* required for LLM integration. This key must be written in a `.env` file at the root of the `lang/othello-langium/` folder.
 
 ---
 
@@ -85,9 +88,53 @@ All configurations are available on the web user interface.
 
 ## 5 - AIs (rule/heuristic/LLM)
 
+### 1. Minimax (Algorithmic)
+- Implementation: Standard Minimax algorithm with fixed depth (2 or 3 depending on board size).
+
+- Strengths: Fast, rules-compliant, plays strategically optimal moves for short horizons.
+
+- Weaknesses: Horizon effect, predictable.
+
+### 2. LLM Agent (OpenRouter/GPT-4o)
+- Implementation: Sends the board state as an ASCII string to an LLM via OpenRouter.
+
+- Strengths: Can "reason" about the board, provides textual explanations for moves.
+
+- Weaknesses: Slower, occasional "hallucinations" (illegal moves), cost per token.
+
+- Failure Handling: If the LLM proposes an illegal move, the system rejects it and falls back to Minimax (hybrid approach).
+
 ---
 
 ## 6 - LLM protocol
+
+To ensure consistent gameplay, we use a strict protocol for LLM communication.
+
+### Input Context:
+
+- System Prompt: "You are an expert Othello player..."
+
+- Board Representation: ASCII Grid.
+
+- Legal Moves: List of algebraic coordinates (e.g. [C3, D4]).
+
+### Output Schema (JSON):
+```json
+{
+  "reasoning": "Placing here flips the diagonal line...",
+  "move": "C3"
+}
+```
+
+The logs of all LLM interactions are saved in `lang/othello-langium/packages/backends/llm/data/eval/logs/`.
+
+### Reproducibility:
+
+- Model: openai/gpt-4o
+
+- Temperature: 0.2 (Low randomness for stability)
+
+- Seed: Optional (for testing).
 
 ---
 
@@ -100,6 +147,8 @@ All configurations are available on the web user interface.
 * Board types beyond square/circle not supported.
 * Complex multi-player games not handled.
 * LLM AI can occasionally propose illegal moves.
+* Only standard "no moves left" or "board full" conditions are robustly supported.
+* Waiting for the API response can take 2-5 seconds, which breaks the flow of fast-paced games.
 
 ---
 
@@ -108,6 +157,7 @@ All configurations are available on the web user interface.
 * Langium simplifies DSL parsing and validation.
 * LLM integration requires careful move validation.
 * Designing a mapping between logical board and DOM is critical for non-rectangular boards.
+* Separating the Model (DSL) from the View (HTML) and Controller (Python) was crucial. It allowed us to change the backend logic without rewriting the parser.
 
 ---
 

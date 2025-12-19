@@ -1,10 +1,6 @@
 @startuml Othello DSL
 title Métamodèle - Othello DSL
 
-' ======================
-' Concepts principaux
-' ======================
-
 class Game {
   +name: ID
 }
@@ -115,10 +111,6 @@ class ScoringRule {
   +rule: string = "count_pieces_per_player"
 }
 
-
-' ======================
-' Relations
-' ======================
 
 Game --> CompileTimeBlock : compileTime [0..1]
 Game --> RunTimeBlock : runTime [0..1]
