@@ -4,9 +4,9 @@ import * as url from 'node:url';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import chalk from 'chalk';
-import { createOthelloServices } from '../../language/src/othello-module.js';
+import { createOthelloServices } from '../../language/out/othello-module.js';
 import { extractAstNode } from './util.js';
-import type { Game } from '../../language/src/generated/ast.js';
+import type { Game } from '../../language/out/generated/ast.js';
 import { OthelloDslLanguageMetaData } from '../../language/out/generated/module.js';
 import { generateOutput, type TargetName } from './generator.js';
 

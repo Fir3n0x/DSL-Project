@@ -21,7 +21,6 @@ def get_valid_moves(board, player):
     opponent = "white" if player == "black" else "black"
     valid_moves = []
     
-    # Détection dynamique de la taille
     rows = len(board)
     cols = len(board[0]) if rows > 0 else 0
 
@@ -65,7 +64,6 @@ def apply_move(board, move, player):
     return new_board
 
 def evaluate(board, player):
-    # Simple heuristic: difference in piece count
     player_count = sum(row.count(player) for row in board)
     opponent = "white" if player == "black" else "black"
     opponent_count = sum(row.count(opponent) for row in board)
@@ -81,7 +79,6 @@ def minimax(board, depth, player, maximizing):
         max_eval = float("-inf")
         for move in valid_moves:
             new_board = apply_move(board, move, player)
-            # Appel récursif
             eval_score, _ = minimax(new_board, depth - 1, "white" if player == "black" else "black", False)
             if eval_score > max_eval:
                 max_eval = eval_score
@@ -97,7 +94,6 @@ def minimax(board, depth, player, maximizing):
                 best_move = move
         return min_eval, best_move
 
-# Wrapper pour l'appel depuis server.py
 def get_minimax_move(board, player):
     depth = 3
     if len(board) * len(board[0]) > 100:
@@ -110,8 +106,8 @@ def get_minimax_move(board, player):
 # LLM
 # =================
 
+# Convertit le plateau en texte pour le prompt LLM
 def board_to_string(board):
-    # Convertit le plateau en texte pour le prompt LLM
     if not board: return ""
     rows = len(board)
     cols = len(board[0])
@@ -147,8 +143,8 @@ def parse_llm_move(move_str):
 def to_algebraic(r, c):
     return f"{chr(ord('A') + c)}{r + 1}"
 
+# Interroge le LLM
 def get_llm_move(board, player, config):
-    # Interroge le LLM
     if not OpenRouterClient:
         print("Erreur: OpenRouterClient non disponible.")
         return None

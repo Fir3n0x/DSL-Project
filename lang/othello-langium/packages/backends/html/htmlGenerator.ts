@@ -35,8 +35,7 @@ export function renderHTML(model: Game): string {
     
     <div style="margin: 1em 0;">
         <button class="toggle-btn" onclick="toggleTheme()">🌓 Changer de thème</button>
-        <button class="toggle-btn" onclick="sendStateToAI()">🤖 Envoyer état au serveur IA</button>
-        <button class="toggle-btn" onclick="toggleSecretVideo()">Bonus</button>
+        <button class="toggle-btn" onclick="toggleSecretVideo()">🎁 Bonus</button>
     </div>
     
     <div style="margin: 1em 0;">
