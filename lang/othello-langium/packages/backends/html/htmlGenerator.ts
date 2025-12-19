@@ -57,7 +57,7 @@ export function renderHTML(model: Game): string {
     
     <div class="difficulty-slider" id="singleDifficultySlider">
         <label for="aiDifficulty">🎯 Niveau de difficulté de l'IA</label>
-        <input type="range" id="aiDifficulty" min="1" max="10" value="3" step="1" autocomplete="off">
+        <input type="range" id="aiDifficulty" min="1" max="6" value="3" step="1" autocomplete="off">
         <div class="difficulty-value">
             Niveau: <span id="difficultyDisplay">3</span> (Depth: <span id="depthDisplay">3</span>)
         </div>
