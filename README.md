@@ -3,7 +3,9 @@
 ## 1 -Project Overview
 This project is a Domain-Specific Language (DSL) built with **Langium**. It allows users to generate and play games in different modes, including Human vs AI, Human vs LLM, and AI/LLM vs AI/LLM. The system supports both visual (HTML/JS) and headless evaluation modes. The DSL programs define game rules, initial board setups, and AI strategies. This project demonstrates the integration of language engineering, AI reasoning, and interactive gameplay.
 
-![Screenshot or GIF of the project in action](./media/screenshot.gif)
+![Screenshot home project](./media/home.png)
+![Screenshot variant 1 project](./media/variant1.png)
+![Screenshot variant 5 project](./media/variant5.png)
 
 ---
 
@@ -77,8 +79,9 @@ All configurations are available on the web user interface.
 ```bash
 ./model/metamodel.puml
 ./lang/othello-langium/packages/language/src/othello.langium
----
 ```
+
+---
 
 ## 5 - AIs (rule/heuristic/LLM)
 
